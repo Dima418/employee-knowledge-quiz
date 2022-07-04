@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# from routes import *
+from routes import home
 from core import config
 
 
@@ -22,5 +22,4 @@ def get_application():
 
 app = get_application()
 
-# Add routes here
-# app.include_router(router)
+app.include_router(home.router)
