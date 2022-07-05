@@ -1,0 +1,16 @@
+### Python ###
+/__pycache__
+/pycache/*
+**/*.pyc
+
+### Git ###
+.git
+.git/*
+
+### Venv ###
+venv
+venv/*
+
+### Other ###
+LICENSE
+README.md
