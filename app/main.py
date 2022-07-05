@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.database.session import engine, Base
+from app.core import config, handlers
 from app.routes import home
-from app.core import config
 
 
 origins = ["http://localhost:8080", "http://127.0.0.1:8080"]
@@ -18,7 +19,12 @@ def get_application():
         allow_headers=["*"],
     )
 
+    _app.add_event_handler("startup", handlers.create_start_app_handler(_app))
+    _app.add_event_handler("shutdown", handlers.create_stop_app_handler(_app))
+
     return _app
+
+Base.metadata.create_all(bind=engine)
 
 app = get_application()
 
