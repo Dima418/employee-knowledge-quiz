@@ -24,4 +24,3 @@ DATABASE_URL = config(
     cast=DatabaseURL,
     default=DB_DEFAULT
 )
-AUTH_COOKIE_AGE = 60 * 60 * 24 * 2  # 2 days

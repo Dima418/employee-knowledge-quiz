@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes import home
-from core import config
+from app.routes import home
+from app.core import config
 
 
 origins = ["http://localhost:8080", "http://127.0.0.1:8080"]
