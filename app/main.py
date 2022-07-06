@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database.session import engine, Base
+from app.database.base import Base
+from app.database.session import engine
 from app.core import config, handlers
 from app.routes import home
 
