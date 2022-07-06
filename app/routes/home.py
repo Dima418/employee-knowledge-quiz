@@ -1,4 +1,7 @@
 from fastapi import APIRouter
+from databases import Database
+
+from app.core import config
 
 
 router = APIRouter(tags=["home"])
