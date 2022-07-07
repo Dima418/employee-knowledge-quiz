@@ -36,7 +36,7 @@ class UserSignUp(BaseModel):
     @root_validator
     def validate_passwords_match(cls, values):
         pw1, pw2 = values.get('password'), values.get('password_repeat')
-        if pw1 is not None and pw2 is not None and pw1 != pw2:
+        if pw1 is not None and pw2 is not None and pw1 is not pw2:
             raise ValueError("Passwords don't match")
         return values
 
