@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database.session import engine, Base
+from app.database.base import Base
+from app.database.session import engine
 from app.core import config, handlers
-from app.routes import home
+from app.routes import home, user
 
 
 origins = ["http://localhost:8080", "http://127.0.0.1:8080"]
@@ -29,3 +30,4 @@ Base.metadata.create_all(bind=engine)
 app = get_application()
 
 app.include_router(home.router)
+app.include_router(user.router)
