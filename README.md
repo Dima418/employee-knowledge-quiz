@@ -12,6 +12,12 @@
 
         cd employee-knowledge-quiz
 
+### Run using Docker-compose
+
+1. Run the docker-compose using:
+
+        docker-compose up
+
 ### Run using Docker
 
 1. Build an image:
