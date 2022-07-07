@@ -28,15 +28,17 @@ class UserSignUp(BaseModel):
     def validate_password(cls, values):
         password = values.get("password")
         if password == "":
-            raise ValueError('Password is required')
+            raise ValueError("Password is required")
         if len(password) < 8:
             raise ValueError("Password must be at least 8 characters")
         return values
 
     @root_validator
     def validate_passwords_match(cls, values):
-        pw1, pw2 = values.get('password'), values.get('password_repeat')
-        if pw1 is not None and pw2 is not None and pw1 is not pw2:
+        pw1, pw2 = values.get("password"), values.get("password_repeat")
+        if pw1 is None or pw2 is None:
+            raise ValueError("Both fields are required")
+        if pw1 != pw2:
             raise ValueError("Passwords don't match")
         return values
 
@@ -52,5 +54,5 @@ class UserSignIn(BaseModel):
     def validate_password(cls, values):
         password = values.get("password")
         if password == "":
-            raise ValueError('Password is required')
+            raise ValueError("Password is required")
         return values
