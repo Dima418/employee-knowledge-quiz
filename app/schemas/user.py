@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, root_validator
+from pydantic import BaseModel, EmailStr, validator, root_validator
 
 
 class User(BaseModel):
@@ -24,19 +24,16 @@ class UserSignUp(BaseModel):
     class Config:
         orm_mode = True
 
-    @root_validator(pre=True)
-    def validate_password(cls, values):
-        password = values.get("password")
-        if password == "":
-            raise ValueError('Password is required')
+    @validator("password")
+    def validate_password(cls, password):
         if len(password) < 8:
             raise ValueError("Password must be at least 8 characters")
-        return values
+        return password
 
     @root_validator
-    def validate_passwords_match(cls, values):
-        pw1, pw2 = values.get('password'), values.get('password_repeat')
-        if pw1 is not None and pw2 is not None and pw1 is not pw2:
+    def validate_passwords_match(cls, values):  
+        pw1, pw2 = values.get("password"), values.get("password_repeat")
+        if pw1 != pw2:
             raise ValueError("Passwords don't match")
         return values
 
@@ -47,10 +44,3 @@ class UserSignIn(BaseModel):
 
     class Config:
         orm_mode = True
-
-    @root_validator(pre=True)
-    def validate_password(cls, values):
-        password = values.get("password")
-        if password == "":
-            raise ValueError('Password is required')
-        return values
