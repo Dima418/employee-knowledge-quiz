@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, validator, root_validator
 
 
-class User(BaseModel):
+class UserSchema(BaseModel):
     id: int
     name: str
     email: EmailStr
@@ -15,7 +15,7 @@ class User(BaseModel):
         orm_mode = True
 
 
-class UserSignUp(BaseModel):
+class UserSignUpSchema(BaseModel):
     name: str
     email: EmailStr
     password: str
@@ -38,7 +38,7 @@ class UserSignUp(BaseModel):
         return values
 
 
-class UserSignIn(BaseModel):
+class UserSignInSchema(BaseModel):
     email: EmailStr
     password: str
 

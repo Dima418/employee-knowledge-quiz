@@ -1,3 +1,4 @@
+import secrets
 from dotenv import load_dotenv
 from starlette.config import Config
 from starlette.datastructures import Secret
@@ -7,9 +8,13 @@ load_dotenv()
 
 config = Config(".env")
 
-PROJECT_NAME = "Employee Knowladge Quiz"
-VERSION = "0.0.2"
+PROJECT_NAME = "Employee Knowledge Quiz"
+VERSION = "0.0.4"
 API_PREFIX = "/api"
+
+SECRET_KEY: str = secrets.token_urlsafe(32)
+ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+ACCESS_TOKEN_URL: str = "/signin/access-token"
 
 POSTGRES_USER = config("POSTGRES_USER", cast=str)
 POSTGRES_PASSWORD = config("POSTGRES_PASSWORD", cast=Secret)

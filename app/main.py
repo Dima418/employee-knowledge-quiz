@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database.base import Base
 from app.database.session import engine
 from app.core import config, handlers
-from app.routes import home, user
+from app.routes import home, token, user
 
 
 origins = ["http://localhost:8080", "http://127.0.0.1:8080"]
@@ -31,3 +31,4 @@ app = get_application()
 
 app.include_router(home.router)
 app.include_router(user.router)
+app.include_router(token.router)
