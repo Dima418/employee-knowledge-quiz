@@ -1,14 +1,15 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.core import config
-from app.core.security import reusable_oauth2, ALGORITHM
+from app.core.security import reusable_oauth2
 from app.crud.user import crud_user
 from app.database.session import get_db
 from app.database.models.user import User
-from app.schemas.token import TokenData
+from app.schemes.token import TokenData
+from app.utils.HTTP_errors import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 
 async def get_current_user(
@@ -16,17 +17,17 @@ async def get_current_user(
     token: str = Depends(reusable_oauth2)
 ) -> User:
     try:
-        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ENCODING_ALGORITHM])
         token_data = TokenData(**payload)
+
+        if token_data.sub is None:
+            raise HTTP_401_UNAUTHORIZED
     except (jwt.JWTError, ValidationError):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Could not validate credentials",
-        )
-    user = await crud_user.get_by_email(db, email=token_data.email)
+        raise HTTP_403_FORBIDDEN
+
+    user = await crud_user.get_by_email(db, email=token_data.sub)
+
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTP_404_NOT_FOUND
+
     return user

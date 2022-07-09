@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, validator, root_validator
 
 
-class UserSchema(BaseModel):
+class UserBase(BaseModel):
     id: int
     name: str
     email: EmailStr
@@ -15,7 +15,7 @@ class UserSchema(BaseModel):
         orm_mode = True
 
 
-class UserSignUpSchema(BaseModel):
+class UserSignUp(BaseModel):
     name: str
     email: EmailStr
     password: str
@@ -31,16 +31,21 @@ class UserSignUpSchema(BaseModel):
         return password
 
     @root_validator
-    def validate_passwords_match(cls, values):  
+    def validate_passwords_match(cls, values):
         pw1, pw2 = values.get("password"), values.get("password_repeat")
         if pw1 != pw2:
             raise ValueError("Passwords don't match")
         return values
 
 
-class UserSignInSchema(BaseModel):
+class UserSignIn(BaseModel):
     email: EmailStr
     password: str
 
     class Config:
         orm_mode = True
+
+
+class UserUpdate(BaseModel):
+    name: str
+    email: EmailStr

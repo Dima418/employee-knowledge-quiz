@@ -7,6 +7,5 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
+    sub: EmailStr
     exp: int
-    email: EmailStr
-    password: str
