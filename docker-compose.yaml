@@ -3,8 +3,9 @@ version: '3.8'
 services:
   fastapi:
     build: .
+    container_name: employee-knowledge-quiz-api
     ports:
-      - "8000:8000"
+      - 8000:8000
     depends_on:
       - postgres
     restart: always
