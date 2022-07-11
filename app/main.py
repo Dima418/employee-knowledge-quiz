@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.database.base import Base
 from app.database.session import engine
 from app.core import config, handlers
-from app.routes import home, user
+from app.routes import auth, home, user
 
 
 origins = ["http://localhost:8080", "http://127.0.0.1:8080"]
@@ -12,6 +13,7 @@ origins = ["http://localhost:8080", "http://127.0.0.1:8080"]
 def get_application():
     _app = FastAPI(title=config.PROJECT_NAME, version=config.VERSION)
 
+    _app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY)
     _app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
@@ -31,3 +33,4 @@ app = get_application()
 
 app.include_router(home.router)
 app.include_router(user.router)
+app.include_router(auth.router)

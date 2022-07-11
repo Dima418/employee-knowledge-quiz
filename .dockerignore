@@ -1,6 +1,11 @@
+### VS Code ###
+.vscode/
+.vscode/*
+.vscode/settings.json
+
 ### Python ###
 **/__pycache__/
-/pycache/*
+/__pycache__/*
 **/*.pyc
 
 ### Git ###
