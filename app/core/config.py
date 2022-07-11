@@ -18,11 +18,6 @@ SECRET_KEY: str = secrets.token_urlsafe(32)
 ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
 JWT_AUTH_PATH: str = "/auth-jwt"
-GOOGLE_AUTH_PATH: str = "/auth-google"
-GOOGLE_AUTH_URL: str = "http://127.0.0.1:8000" + GOOGLE_AUTH_PATH
-
-GOOGLE_CLIENT_ID :str = config("GOOGLE_CLIENT_ID", cast=str)
-GOOGLE_CLIENT_SECRET :str = config("GOOGLE_CLIENT_SECRET", cast=str)
 
 POSTGRES_USER: str = config("POSTGRES_USER", cast=str)
 POSTGRES_PASSWORD: Secret = config("POSTGRES_PASSWORD", cast=Secret)

@@ -9,33 +9,7 @@ from passlib.context import CryptContext
 from app.core import config
 
 
-# OAuth for Google
-
-def _setup_oauth() -> OAuth:
-    if config.GOOGLE_CLIENT_ID is None or config.GOOGLE_CLIENT_SECRET is None:
-        raise BaseException("Missing env variables")
-
-    config_data = {
-        "GOOGLE_CLIENT_ID": config.GOOGLE_CLIENT_ID,
-        "GOOGLE_CLIENT_SECRET": config.GOOGLE_CLIENT_SECRET
-    }
-    starlette_config = Config(environ=config_data)
-
-    oauth = OAuth(starlette_config)
-    oauth.register(
-        name='google',
-        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-        client_kwargs={'scope': 'openid email profile'},
-    )
-    return oauth
-
-oauth: OAuth = _setup_oauth()
-
-
-# Authentication with JWT
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{config.JWT_AUTH_PATH}")
 
 async def create_access_token(
