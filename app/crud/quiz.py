@@ -5,7 +5,7 @@
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
-from app.database.models.quiz import Quiz, Question, Answer
+from app.database.models.quiz import Quiz, Question, Answer, QuizResult
 
 
 class CRUDQuiz(CRUDBase):
@@ -67,6 +67,30 @@ class CRUDAnswer(CRUDBase):
     pass
 
 
+class CRUDQuizResult(CRUDBase):
+    """Class for CRUD operations on ``QuizResult`` model.
+
+    Args:
+        CRUDBase: The CRUD base class.
+    """
+
+    async def create(self, db: Session, *, new_obj: QuizResult) -> QuizResult:
+        """Create a new object.
+
+        Args:
+            db (Session): The database session.
+            new_obj (QuizResult): The object to create.
+
+        Returns:
+            (QuizResult): The created object.
+        """
+        db.add(new_obj)
+        db.commit()
+        db.refresh(new_obj)
+        return new_obj
+
+
 crud_quiz = CRUDQuiz(Quiz)
 crud_question = CRUDQuestion(Question)
 crud_answer = CRUDAnswer(Answer)
+crud_quiz_result = CRUDQuizResult(QuizResult)

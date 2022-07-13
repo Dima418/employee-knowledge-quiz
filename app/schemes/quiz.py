@@ -2,9 +2,7 @@
 
 """
 
-from datetime import datetime
-
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 
 
 # Request model for the quiz questions with user answers
@@ -42,54 +40,14 @@ class QuizResponse(BaseModel):
     quiz_description: str
     questions: list[QuestionResponse]
 
-# Schemes for CRUD
 
-class QuizScheme(BaseModel):
-    id: int
-    title: str
-    description: str
-    is_active: bool = True
+class QuizResultResponse(BaseModel):
+    max_score: int
+    user_score: int
+    score_percentage: float | None
 
-    class Config:
-        orm_mode = True
-
-
-class CategoryScheme(BaseModel):
-    id: int
-    name: str
-    description: str | None = None
-
-    class Config:
-        orm_mode = True
-
-
-class QuestionScheme(BaseModel):
-    id: int
-    quiz_id: int
-    question_text: str
-    categories: list[CategoryScheme] | None = None
-
-    class Config:
-        orm_mode = True
-
-
-class AnswerScheme(BaseModel):
-    id: int
-    question_id: int
-    answer_text: str
-    is_correct: bool = False
-
-    class Config:
-        orm_mode = True
-
-
-class QuizResultScheme(BaseModel):
-    id: int
-    user_id: int
-    quiz_id: int
-    user_score: float = 0
-    max_score: float = 0
-    finished_at: datetime
-
-    class Config:
-        orm_mode = True
+    @root_validator
+    def compute_score_percentage(cls, values) -> dict:
+        score_percentage = values["user_score"] / values["max_score"] * 100
+        values["score_percentage"] = score_percentage
+        return values

@@ -5,13 +5,14 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.crud.quiz import crud_quiz
-from app.database.models.quiz import Answer, Quiz
+from app.crud.quiz import crud_quiz, crud_quiz_result
+from app.database.models.quiz import Answer, Quiz, QuizResult
 from app.database.models.user import User
 from app.database.session import get_db
 from app.schemes.quiz import (
     QuizRequset,
-    QuizResponse
+    QuizResponse,
+    QuizResultResponse
 )
 from app.utils.quiz import (
     generate_quiz_response,
@@ -54,7 +55,7 @@ async def all_quizzes(
     return quiz_response
 
 
-@router.post("/quiz/{quiz_id}/submit")
+@router.post("/quiz/{quiz_id}/submit", response_model=QuizResultResponse)
 async def submit_quiz(
     quiz_id: int,
     quiz_request: QuizRequset,
@@ -64,29 +65,38 @@ async def submit_quiz(
     """Submit quiz.
 
     Args:
+
         quiz_id (int): Quiz id.
+
         quiz_request (QuizRequset): Quiz request with answers.
+
         db (Session, optional): The database session. Defaults to Depends(get_db).
+
         current_user (User, optional): Current authenticated user. Defaults to Depends(get_current_user).
 
     Raises:
+
         HTTP_400_BAD_REQUEST (HTTPException): Quiz id mismatch.
             ``quiz_id`` does not match ``quiz_request.quiz_id``.
+
         HTTP_400_BAD_REQUEST (HTTPException): Quiz has no questions or answers.
             Quiz is empty.
+
         HTTP_400_BAD_REQUEST (HTTPException): Quiz don't have any questions.
             Quiz has no correct questions.
+
         HTTP_400_BAD_REQUEST (HTTPException): Incorrect number of answers provided.
             Answers provided by user does not match number of answers in questions.
+
         HTTP_400_BAD_REQUEST (HTTPException): Incorrect answer id provided. Quiz has no correct questions.
             Answer provided by user does not match any of answers in questions
+
         HTTP_404_NOT_FOUND (HTTPException): Quiz not found.
             No quiz found with id ``quiz_id``.
 
     Returns:
-        (dict):
-            max_score (int): Max score for quiz.
-            user_score (int): User score for quiz.
+
+        (QuizResultResponse): Quiz result.
     """
     if quiz_id != quiz_request.quiz_id:
         raise HTTP_400_BAD_REQUEST("Quiz id mismatch")
@@ -125,4 +135,14 @@ async def submit_quiz(
                 if quiz_answer.is_correct and user_answer.is_correct:
                     user_score += 1
 
-    return {"max_score": max_score, "user_score": user_score}
+    await crud_quiz_result.create(
+        db=db,
+        new_obj=QuizResult(
+            user_id=current_user.id,
+            quiz_id=quiz_id,
+            max_score=max_score,
+            user_score=user_score
+        )
+    )
+
+    return QuizResultResponse(max_score=max_score, user_score=user_score)
