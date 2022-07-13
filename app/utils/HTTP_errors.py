@@ -1,19 +1,27 @@
 from fastapi import HTTPException, status
 
 
-HTTP_400_BAD_REQUEST: HTTPException = HTTPException(
-    status_code=status.HTTP_400_BAD_REQUEST,
-    detail="Incorrect email or password")
+def HTTP_400_BAD_REQUEST(detail: str = "Bad request"):
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=detail
+    )
 
-HTTP_401_UNAUTHORIZED: HTTPException = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Could not validate credentials",
-    headers={"WWW-Authenticate": "Bearer"})
+def HTTP_401_UNAUTHORIZED(detail: str = "Unauthorized", headers: dict = None):
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=detail,
+        headers=headers or {"WWW-Authenticate": "Bearer"}
+    )
 
-HTTP_403_FORBIDDEN: HTTPException = HTTPException(
-    status_code=status.HTTP_403_FORBIDDEN,
-    detail="Could not validate credentials")
+def HTTP_403_FORBIDDEN(detail: str = "Forbidden"):
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=detail
+    )
 
-HTTP_404_NOT_FOUND: HTTPException = HTTPException(
-    status_code=status.HTTP_404_NOT_FOUND,
-    detail="User not found")
+def HTTP_404_NOT_FOUND(detail: str = "Not found"):
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=detail
+    )

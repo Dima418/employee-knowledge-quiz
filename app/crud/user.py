@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
 from app.database.models.user import User
-from app.schemes.user import UserSignUp, UserUpdate
+from app.schemes import UserSignUp, UserUpdate
 from app.utils.HTTP_errors import HTTP_400_BAD_REQUEST
 
 
@@ -25,10 +25,10 @@ class CRUDUser(CRUDBase[User, UserSignUp, UserUpdate]):
     async def authenticate(self, db: Session, email: str, password: str) -> User:
         user = await self.get_by_email(db=db, email=email)
         if user is None:
-            raise HTTP_400_BAD_REQUEST
+            raise HTTP_400_BAD_REQUEST("Invalid email or password")
 
         if not await verify_password(password, user.password):
-            raise HTTP_400_BAD_REQUEST
+            raise HTTP_400_BAD_REQUEST("Invalid email or password")
 
         return user
 

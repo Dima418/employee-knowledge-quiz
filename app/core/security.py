@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 
 from fastapi.security import OAuth2PasswordBearer
-from starlette.config import Config
-from authlib.integrations.starlette_client import OAuth
 from jose import jwt
 from passlib.context import CryptContext
 

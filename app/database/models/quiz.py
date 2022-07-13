@@ -5,14 +5,14 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    Sequence,
     String,
     Table
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from app.database.base import Base
-from app.database.session import engine
+from app.database.base_class import Base
 
 
 # Many-to-many relationship between Category and Question
@@ -35,7 +35,7 @@ class Quiz(Base):
     questions = relationship("Question", back_populates="quiz")
 
     # one-to-many relationship with QuizResult
-    quiz_results = relationship("QuizResult", back_populates="quiz")
+    quiz_resultss = relationship("QuizResult", back_populates="quiz")
 
 
 class Question(Base):
@@ -73,11 +73,14 @@ class Answer(Base):
     question_id = Column(Integer, ForeignKey("questions.id"), primary_key=True)
     question = relationship("Question", back_populates="answers")
 
+    id = Column(Integer, Sequence("answers_id_seq", start=1, increment=1), server_default=func.nextval("answers_id_seq"))
 
-class QuizResults(Base):
+
+class QuizResult(Base):
     __tablename__ = "quiz_results"
     id = Column(Integer, primary_key=True, index=True)
-    score = Column(Float, nullable=False, default=0)
+    user_score = Column(Float, nullable=False, default=0)
+    max_score = Column(Float, nullable=False, default=1)
     finished_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # bidirectional one-to-many relationship with Question
@@ -86,6 +89,4 @@ class QuizResults(Base):
 
     # bidirectional one-to-manyrelationship with Question
     quiz_id = Column(Integer, ForeignKey("quizzes.id"), nullable=False)
-    quiz = relationship("Quiz", back_populates="quiz_results")
-
-Base.metadata.create_all(engine)
+    quiz = relationship("Quiz", back_populates="quiz_resultss")

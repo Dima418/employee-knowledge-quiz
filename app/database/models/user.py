@@ -8,8 +8,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from app.database.base import Base
-from app.database.session import engine
+from app.database.base_class import Base
 
 
 class User(Base):
@@ -22,6 +21,4 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    quiz_results = relationship("QuizResults", back_populates="user")
-
-Base.metadata.create_all(engine)
+    quiz_results = relationship("QuizResult", back_populates="user")

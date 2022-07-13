@@ -7,9 +7,13 @@ from app.core import config
 from app.core.security import reusable_oauth2
 from app.crud.user import crud_user
 from app.database.session import get_db
-from app.database.models.user import User
-from app.schemes.token import TokenData
-from app.utils.HTTP_errors import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
+from app.database.base import User
+from app.schemes import TokenData
+from app.utils.HTTP_errors import (
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND
+)
 
 
 async def get_current_user(
@@ -21,13 +25,13 @@ async def get_current_user(
         token_data = TokenData(**payload)
 
         if token_data.sub is None:
-            raise HTTP_401_UNAUTHORIZED
+            raise HTTP_401_UNAUTHORIZED("Invalid token")
     except (jwt.JWTError, ValidationError):
-        raise HTTP_403_FORBIDDEN
+        raise HTTP_403_FORBIDDEN("Invalid token")
 
     user = await crud_user.get_by_email(db, email=token_data.sub)
 
     if user is None:
-        raise HTTP_404_NOT_FOUND
+        raise HTTP_404_NOT_FOUND("User not found")
 
     return user

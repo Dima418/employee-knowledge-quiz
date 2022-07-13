@@ -3,8 +3,9 @@ from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
 from app.crud.user import crud_user
+from app.database.base import User
 from app.database.session import get_db
-from app.schemes.user import UserBase, UserUpdate
+from app.schemes import UserBase, UserUpdate
 from app.utils.user import get_current_user
 
 
@@ -15,7 +16,7 @@ async def all_users(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 10,
-    current_user: UserBase = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ) -> list[UserBase]:
     """
     Retrieve users.
@@ -29,7 +30,7 @@ async def update_user_me(
     *,
     user_in: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: UserBase = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> UserBase:
     """
     Update own user.
@@ -42,7 +43,7 @@ async def update_user_me(
 async def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: UserBase = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     """
     Delete user with specific id.
