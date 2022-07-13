@@ -1,3 +1,7 @@
+"""Quiz pydantic schemes.
+
+"""
+
 from datetime import datetime
 
 from pydantic import BaseModel
@@ -70,6 +74,7 @@ class QuestionScheme(BaseModel):
 
 
 class AnswerScheme(BaseModel):
+    id: int
     question_id: int
     answer_text: str
     is_correct: bool = False

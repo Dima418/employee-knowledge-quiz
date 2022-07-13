@@ -1,3 +1,7 @@
+"""Authentication token pydantic schemes.
+
+"""
+
 from pydantic import BaseModel, EmailStr
 
 

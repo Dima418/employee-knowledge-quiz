@@ -1,4 +1,4 @@
-# EMPLOYEE KNOWLEDGE QIUZ 
+# EMPLOYEE KNOWLEDGE QIUZ
 
 ## Usage
 
@@ -48,9 +48,22 @@ Run script using one of the following:
 
 ## Services
 
-Service     | Port | Usage
-------------|------|------
-Employee Knowladge Quiz      | 8000 | visit `http://localhost:8000` in your browser
+Service                 | Port | Usage
+------------------------|------|------
+Employee Knowladge Quiz | 8000 | visit `http://localhost:8000` in your browser
+
+## API endpoints
+
+| Method 	| Endpoint               	| Description                                                        	|
+|--------	|------------------------	|--------------------------------------------------------------------	|
+| GET    	| /                      	| Root endpoint.                                                     	|
+| POST   	| /signin                	| Signin.                                                            	|
+| POST   	| /signup                	| Signup.                                                            	|
+| GET    	| /users/                	| Get all users. Authentication required.                            	|
+| PUT    	| /update/me             	| Update current user. Authentication required.                      	|
+| DELETE 	| /user/{user_id}        	| Delete specific user. Authentication required.                     	|
+| GET    	| /quiz/{quiz_id}/start  	| Get quiz`s questions and answer variants. Authentication required. 	|
+| POST   	| /quiz/{quiz_id}/submit 	| Submit answers for the quiz. Authentication required.              	|
 
 ---
 

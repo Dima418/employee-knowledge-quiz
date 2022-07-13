@@ -1,5 +1,9 @@
-from app.database.base import Quiz, Answer
-from app.schemes import (
+"""Utility functions for quiz data
+
+"""
+
+from app.database.models.quiz import Quiz, Answer
+from app.schemes.quiz import (
     QuizResponse,
     QuestionResponse,
     QuestionRequset,
@@ -9,8 +13,13 @@ from app.schemes import (
 
 
 async def generate_quiz_response(quiz: Quiz) -> QuizResponse:
-    """
-    Generate quiz response for user to answer
+    """Generate quiz response for user to answer.
+
+    Args:
+        quiz (Quiz): The quiz.
+
+    Returns:
+        (QuizResponse): Quiz with questions and answers.
     """
     questions_response: list[QuestionResponse] = []
 
@@ -42,6 +51,14 @@ async def generate_quiz_response(quiz: Quiz) -> QuizResponse:
 
 
 async def get_quiz_max_score(quiz: Quiz) -> int | None:
+    """Get max score for the quiz.
+
+    Args:
+        quiz (Quiz): The quiz.
+
+    Returns:
+        (int, optional): The max score.
+    """
     max_score: int = 0
     for question in quiz.questions:
         for answer in question.answers:
@@ -51,11 +68,27 @@ async def get_quiz_max_score(quiz: Quiz) -> int | None:
 
 
 async def get_question_ids(quiz: Quiz) -> list[int] | None:
+    """Get question ids for the quiz.
+
+    Args:
+        quiz (Quiz): The quiz.
+
+    Returns:
+        (list[int], optional): List of question ids.
+    """
     questions_ids: list[int] = [question.id for question in quiz.questions]
     return questions_ids if questions_ids else None
 
 
 async def get_answers_ids(quiz: Quiz) -> list[int] | None:
+    """Get answer ids for the quiz.
+
+    Args:
+        quiz (Quiz): The quiz.
+
+    Returns:
+        (list[int], optional): List of answer ids.
+    """
     answers_ids: list[int] = []
     for question in quiz.questions:
         for answer in question.answers:
@@ -65,6 +98,14 @@ async def get_answers_ids(quiz: Quiz) -> list[int] | None:
 
 
 async def get_answers(quiz: Quiz) -> list[Answer]:
+    """Get all answers for quiz.
+
+    Args:
+        quiz (Quiz): The quiz.
+
+    Returns:
+        (list[Answer]): The list of answers.
+    """
     answers: list[Answer] = []
     for question in quiz.questions:
         for answer in question.answers:
@@ -74,6 +115,14 @@ async def get_answers(quiz: Quiz) -> list[Answer]:
 
 
 async def select_user_answers(questions: list[QuestionRequset]) -> list[UserAnswerRequset] | None:
+    """Select user answers from the quiz request.
+
+    Args:
+        questions (list[QuestionRequset]): The list of questions.
+
+    Returns:
+        (list[UserAnswerRequset], optional): List of user answers.
+    """
     user_answers: list[UserAnswerRequset] = []
     for question in questions:
         for user_answer in question.user_answers:

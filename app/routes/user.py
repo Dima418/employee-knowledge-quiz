@@ -1,11 +1,15 @@
+"""User routes.
+
+"""
+
 from fastapi import APIRouter, Depends
 from pydantic import parse_obj_as
 from sqlalchemy.orm import Session
 
 from app.crud.user import crud_user
-from app.database.base import User
+from app.database.models.user import User
 from app.database.session import get_db
-from app.schemes import UserBase, UserUpdate
+from app.schemes.user import UserBase, UserUpdate
 from app.utils.user import get_current_user
 
 
@@ -18,8 +22,20 @@ async def all_users(
     limit: int = 10,
     current_user: User = Depends(get_current_user)
 ) -> list[UserBase]:
-    """
-    Retrieve users.
+    """Retrieve all users.
+
+    Args:
+        db (Session, optional): The database session.
+            Defaults to Depends(get_db).
+        skip (int, optional): The number of objects to skip.
+            Defaults to 0.
+        limit (int, optional): The number of objects to limit.
+            Defaults to 10.
+        current_user (User, optional): Current authenticated user.
+        Defaults to Depends(get_current_user).
+
+    Returns:
+        (list[UserBase]): List of users.
     """
     users = await crud_user.get_multi(db, skip=skip, limit=limit)
     return parse_obj_as(list[UserBase], users)
@@ -32,8 +48,17 @@ async def update_user_me(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> UserBase:
-    """
-    Update own user.
+    """Update current user.
+
+    Args:
+        user_in (UserUpdate): User data.
+        db (Session, optional): The database session.
+            Defaults to Depends(get_db).
+        current_user (User, optional): Current authenticated user.
+            Defaults to Depends(get_current_user).
+
+    Returns:
+        (UserBase): User data.
     """
     user = await crud_user.update(db, old_obj=current_user, new_obj=user_in)
     return UserBase.from_orm(user)
@@ -45,8 +70,17 @@ async def delete_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Delete user with specific id.
+    """Delete a user.
+
+    Args:
+        user_id (int): User ID.
+        db (Session, optional): The database session.
+            Defaults to Depends(get_db).
+        current_user (User, optional): Current authenticated user.
+            Defaults to Depends(get_current_user).
+
+    Returns:
+        (UserBase): User data.
     """
     user = await crud_user.delete(db, id=user_id)
     return user

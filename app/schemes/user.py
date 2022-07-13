@@ -1,3 +1,7 @@
+"""User pydantic schemes.
+
+"""
+
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, validator, root_validator
 
