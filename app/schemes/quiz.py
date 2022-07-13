@@ -1,7 +1,3 @@
-"""Quiz pydantic schemes.
-
-"""
-
 from pydantic import BaseModel, root_validator
 
 

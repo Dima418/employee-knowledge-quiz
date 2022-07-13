@@ -1,7 +1,3 @@
-"""Utility functions for user and user authentication.
-
-"""
-
 from fastapi import Depends
 from jose import jwt
 from pydantic import ValidationError
@@ -24,22 +20,6 @@ async def get_current_user(
     db: Session = Depends(get_db),
     token: str = Depends(reusable_oauth2)
 ) -> User:
-    """Get current authenticated user.
-
-    Args:
-        db (Session, optional): The database session.
-            Defaults to Depends(get_db).
-        token (str, optional): The access token.
-            Defaults to Depends(reusable_oauth2).
-
-    Raises:
-        HTTP_401_UNAUTHORIZED: Raised if token subject is not provided.
-        HTTP_403_FORBIDDEN: Raised if token subject is not valid.
-        HTTP_404_NOT_FOUND: Raised if user is not found.
-
-    Returns:
-        user (User): Current authenticated user.
-    """
     try:
         payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ENCODING_ALGORITHM])
         token_data = TokenData(**payload)

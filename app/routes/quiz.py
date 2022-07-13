@@ -1,7 +1,3 @@
-"""Quiz routes.
-
-"""
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -34,19 +30,6 @@ async def all_quizzes(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Retrieve quiz with specific id.
-
-    Args:
-        quiz_id (int): Quiz id.
-        db (Session, optional): The database session. Defaults to Depends(get_db).
-        current_user (User, optional): Current authenticated user. Defaults to Depends(get_current_user).
-
-    Raises:
-        HTTP_404_NOT_FOUND (HTTPException): Raised if quiz is not found.
-
-    Returns:
-        quiz_response (QuizResponse): Quiz with questions and answers.
-    """
     quiz: Quiz = await crud_quiz.get(id=quiz_id, db=db)
     if quiz is None:
         raise HTTP_404_NOT_FOUND("Quiz not found")
@@ -62,42 +45,6 @@ async def submit_quiz(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Submit quiz.
-
-    Args:
-
-        quiz_id (int): Quiz id.
-
-        quiz_request (QuizRequset): Quiz request with answers.
-
-        db (Session, optional): The database session. Defaults to Depends(get_db).
-
-        current_user (User, optional): Current authenticated user. Defaults to Depends(get_current_user).
-
-    Raises:
-
-        HTTP_400_BAD_REQUEST (HTTPException): Quiz id mismatch.
-            ``quiz_id`` does not match ``quiz_request.quiz_id``.
-
-        HTTP_400_BAD_REQUEST (HTTPException): Quiz has no questions or answers.
-            Quiz is empty.
-
-        HTTP_400_BAD_REQUEST (HTTPException): Quiz don't have any questions.
-            Quiz has no correct questions.
-
-        HTTP_400_BAD_REQUEST (HTTPException): Incorrect number of answers provided.
-            Answers provided by user does not match number of answers in questions.
-
-        HTTP_400_BAD_REQUEST (HTTPException): Incorrect answer id provided. Quiz has no correct questions.
-            Answer provided by user does not match any of answers in questions
-
-        HTTP_404_NOT_FOUND (HTTPException): Quiz not found.
-            No quiz found with id ``quiz_id``.
-
-    Returns:
-
-        (QuizResultResponse): Quiz result.
-    """
     if quiz_id != quiz_request.quiz_id:
         raise HTTP_400_BAD_REQUEST("Quiz id mismatch")
 

@@ -1,7 +1,3 @@
-"""Configurations for the application.
-
-"""
-
 import secrets
 from dotenv import load_dotenv
 from starlette.config import Config

@@ -1,7 +1,3 @@
-"""Utility functions to raise HTTP exceptions
-
-"""
-
 from fastapi import HTTPException, status
 
 
