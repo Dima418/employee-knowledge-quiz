@@ -22,7 +22,7 @@ async def all_users(
     return parse_obj_as(list[UserBase], users)
 
 
-@router.put("/update/me", response_model=UserBase)
+@router.patch("/update/me", response_model=UserBase)
 async def update_user_me(
     *,
     user_in: UserUpdate,
