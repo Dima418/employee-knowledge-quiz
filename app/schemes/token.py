@@ -1,11 +1,20 @@
 from pydantic import BaseModel, EmailStr
 
 
-class Token(BaseModel):
+class TokenResponce(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
 
 class TokenData(BaseModel):
-    sub: EmailStr
+    email: EmailStr
+    id: int
+
+
+class AccsessTokenData(TokenData):
+    refresh_token: str
+    exp: int
+
+
+class RefreshTokenData(TokenData):
     exp: int

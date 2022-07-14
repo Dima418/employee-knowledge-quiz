@@ -18,7 +18,8 @@ API_PREFIX = "/api"
 
 ENCODING_ALGORITHM: str = "HS256"
 SECRET_KEY: str = secrets.token_urlsafe(32)
-ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 # 1 hour
+REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 1 day
 
 # Authentication route endpoint
 
