@@ -34,8 +34,7 @@ from app.utils.quiz import (
     get_quiz_max_score,
     get_question_ids,
     get_answers_ids,
-    get_answers,
-    select_user_answers
+    get_real_answers
 )
 from app.utils.user import get_current_user
 from app.utils.HTTP_errors import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -43,7 +42,7 @@ from app.utils.HTTP_errors import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 router = APIRouter(tags=["quiz"])
 
-@router.get("/quiz/{quiz_id}/start", response_model=QuizResponse)
+@router.get("/quiz/{quiz_id}/view", response_model=QuizResponse)
 async def all_quizzes(
     quiz_id: int,
     db: Session = Depends(get_db),
@@ -74,7 +73,7 @@ async def submit_quiz(
 
     questions_ids: list[int] = await get_question_ids(quiz)
     quiz_answers_ids: list[int] = await get_answers_ids(quiz)
-    quiz_answers: list[Answer] = await get_answers(quiz)
+    quiz_answers: list[Answer] = await get_real_answers(quiz)
 
     if not questions_ids or not quiz_answers_ids:
         raise HTTP_400_BAD_REQUEST("Quiz has no questions or answers")
@@ -84,7 +83,7 @@ async def submit_quiz(
     if max_score is None:
         raise HTTP_400_BAD_REQUEST("Quiz don't have any correct questions")
 
-    user_answers = await select_user_answers(quiz_request.questions)
+    user_answers = quiz_request.answers
 
     if not user_answers or len(user_answers) != len(quiz_answers_ids):
         raise HTTP_400_BAD_REQUEST("Incorrect number of answers provided")
@@ -93,13 +92,13 @@ async def submit_quiz(
         if user_answer.answer_id not in quiz_answers_ids:
             raise HTTP_400_BAD_REQUEST("Incorrect answer id provided")
 
-    user_score: int = 0
+    user_score: int = max_score
 
     for user_answer in user_answers:
         for quiz_answer in quiz_answers:
             if user_answer.answer_id == quiz_answer.id:
-                if quiz_answer.is_correct and user_answer.is_correct:
-                    user_score += 1
+                if quiz_answer.is_correct != user_answer.is_correct:
+                    user_score -= 1
 
     await crud_quiz_result.create(
         db=db,

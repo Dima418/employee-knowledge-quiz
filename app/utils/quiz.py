@@ -2,9 +2,7 @@ from app.database.models.quiz import Quiz, Answer
 from app.schemes.quiz import (
     QuizResponse,
     QuestionResponse,
-    QuestionRequset,
-    QuestionAnswerVariantResponse,
-    UserAnswerRequset
+    QuestionAnswerVariantResponse
 )
 
 
@@ -41,9 +39,7 @@ async def generate_quiz_response(quiz: Quiz) -> QuizResponse:
 async def get_quiz_max_score(quiz: Quiz) -> int | None:
     max_score: int = 0
     for question in quiz.questions:
-        for answer in question.answers:
-            if answer.is_correct:
-                max_score += 1
+        max_score += len(question.answers)
     return max_score if max_score > 0 else None
 
 
@@ -61,19 +57,10 @@ async def get_answers_ids(quiz: Quiz) -> list[int] | None:
     return answers_ids if answers_ids else None
 
 
-async def get_answers(quiz: Quiz) -> list[Answer]:
+async def get_real_answers(quiz: Quiz) -> list[Answer]:
     answers: list[Answer] = []
     for question in quiz.questions:
         for answer in question.answers:
             answers.append(answer)
 
     return answers
-
-
-async def select_user_answers(questions: list[QuestionRequset]) -> list[UserAnswerRequset] | None:
-    user_answers: list[UserAnswerRequset] = []
-    for question in questions:
-        for user_answer in question.user_answers:
-            user_answers.append(user_answer)
-
-    return user_answers if user_answers else None

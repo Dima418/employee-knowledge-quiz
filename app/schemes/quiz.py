@@ -12,14 +12,9 @@ class UserAnswerRequset(BaseModel):
     is_correct: bool
 
 
-class QuestionRequset(BaseModel):
-    question_id: int
-    user_answers: list[UserAnswerRequset]
-
-
 class QuizRequset(BaseModel):
     quiz_id: int
-    questions: list[QuestionRequset]
+    answers: list[UserAnswerRequset]
 
 # Response model for the quiz questions for user to answer
 
@@ -48,7 +43,7 @@ class QuizResultResponse(BaseModel):
 
     @root_validator
     def compute_score_percentage(cls, values) -> dict:
-        score_percentage = values["user_score"] / values["max_score"] * 100
+        score_percentage = round(values["user_score"] / values["max_score"]  * 100, 2)
         values["score_percentage"] = score_percentage
         return values
 
