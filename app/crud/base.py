@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.database.base import Base
+from app.database.base_class import Base
 
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -13,6 +13,7 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
+
     def __init__(self, model: ModelType):
         self.model = model
 
