@@ -5,8 +5,6 @@ from unicodedata import name
 from pydantic import BaseModel, root_validator
 
 
-# Request model for the quiz questions with user answers
-
 class UserAnswerRequset(BaseModel):
     answer_id: int
     is_correct: bool
@@ -16,7 +14,6 @@ class QuizRequset(BaseModel):
     quiz_id: int
     answers: list[UserAnswerRequset]
 
-# Response model for the quiz questions for user to answer
 
 class QuestionAnswerVariantResponse(BaseModel):
     answer_id: int
@@ -47,9 +44,6 @@ class QuizResultResponse(BaseModel):
         values["score_percentage"] = score_percentage
         return values
 
-## CRUD
-
-# Create
 
 class QuizCreate(BaseModel):
     title: str
@@ -71,7 +65,6 @@ class AnswerCreate(BaseModel):
     answer_text: str
     is_correct: bool
 
-# Retrieve/Update
 
 class QuizScheme(BaseModel):
     id: int

@@ -17,58 +17,52 @@ from app.schemes.quiz import (
 
 
 class CRUDAnswer(CRUDBase):
-    async def get_answers(self, db: Session, quiz_id: int) -> list:
-        answers = db.query(Answer)\
-        .join(Answer.question)\
-        .join(Question.quiz)\
-        .filter(Quiz.id == quiz_id)\
-        .all()
-        return answers
+    async def get_answers(self, db: Session, quiz_id: int) -> list[Answer]:
+        return db.query(Answer)\
+            .join(Answer.question)\
+            .join(Question.quiz)\
+            .filter(Quiz.id == quiz_id)\
+            .all()
 
-    async def get_correct_answers(self, db: Session, question_id: int) -> bool:
-        correct_answers = db.query(Answer.id, Answer.is_correct)\
-        .join(Answer.question)\
-        .filter(Question.id == question_id)\
-        .filter(Answer.is_correct == True)\
-        .all()
-        return correct_answers
+    async def get_correct_answers(self, db: Session, question_id: int) -> list[Answer]:
+        return db.query(Answer.id, Answer.is_correct)\
+            .join(Answer.question)\
+            .filter(Question.id == question_id)\
+            .filter(Answer.is_correct == True)\
+            .all()
 
     async def exists(self, db: Session, answer: AnswerCreate) -> bool:
-        _answer = db.query(Answer)\
+        return db.query(Answer)\
             .filter(Answer.answer_text == answer.answer_text)\
             .join(Answer.question)\
             .filter(Question.id == answer.question_id)\
             .filter(Answer.question_id == answer.question_id)\
-            .first()
-        return _answer is not None
+            .first() is not None
 
 
 class CRUDQuiz(CRUDBase):
     async def exists(self, db: Session, quiz: QuizCreate) -> bool:
-        _quiz = db.query(Quiz)\
+        return db.query(Quiz)\
             .filter(
                 Quiz.title == quiz.title,
                 Quiz.description == quiz.description
-            ).first()
-        return _quiz is not None
+            ).first() is not None
 
 
 class CRUDQuestion(CRUDBase):
     async def exists(self, db: Session, question: QuestionCreate) -> bool:
-        _question = db.query(Question)\
+        return db.query(Question)\
             .join(Question.quiz)\
             .filter(Quiz.id == question.quiz_id)\
             .filter(Question.question_text == question.question_text)\
-            .first()
-        return _question is not None
+            .first() is not None
 
 
 class CRUDCategory(CRUDBase):
     async def exists(self, db: Session, category: CategoryCreate) -> bool:
-        _category = db.query(Category)\
+        return db.query(Category)\
             .filter(Category.name == category.name)\
-            .first()
-        return _category is not None
+            .first() is not None
 
 
 class CRUDQuizResult(CRUDBase):

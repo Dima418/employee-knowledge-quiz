@@ -12,6 +12,12 @@ class CRUDUser(CRUDBase[User, UserSignUp, UserUpdate]):
     async def get_by_email(self, db: Session, *, email: str) -> User | None:
         return db.query(User).filter(User.email == email).first()
 
+    async def set_superuser(self, db: Session, user: User, is_superuser: bool) -> User:
+        user.is_superuser = is_superuser
+        db.commit()
+        db.refresh(user)
+        return user
+
     async def create(self, db: Session, *, obj_in: UserSignUp) -> User:
         db_obj = User(
             name=obj_in.name,
@@ -25,7 +31,7 @@ class CRUDUser(CRUDBase[User, UserSignUp, UserUpdate]):
 
     async def authenticate(self, db: Session, email: str, password: str) -> User:
         user = await self.get_by_email(db=db, email=email)
-        if user is None:
+        if not user:
             raise HTTP_400_BAD_REQUEST("Invalid email or password")
 
         if not await verify_password(password, user.password):

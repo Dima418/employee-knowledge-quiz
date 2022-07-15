@@ -36,7 +36,7 @@ from app.utils.quiz import (
     get_answers_ids,
     get_real_answers
 )
-from app.utils.user import get_current_user
+from app.utils.user import get_current_user, get_current_superuser
 from app.utils.HTTP_errors import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 
@@ -49,11 +49,9 @@ async def all_quizzes(
     current_user: User = Depends(get_current_user)
 ):
     quiz: Quiz = await crud_quiz.get(id=quiz_id, db=db)
-    if quiz is None:
+    if not quiz:
         raise HTTP_404_NOT_FOUND("Quiz not found")
-
-    quiz_response: QuizResponse = await generate_quiz_response(quiz)
-    return quiz_response
+    return await generate_quiz_response(quiz)
 
 
 @router.post("/quiz/{quiz_id}/submit", response_model=QuizResultResponse)
@@ -68,8 +66,11 @@ async def submit_quiz(
 
     quiz: Quiz = await crud_quiz.get(id=quiz_id, db=db)
 
-    if quiz is None:
+    if not quiz:
         raise HTTP_404_NOT_FOUND("Quiz not found")
+
+    if not quiz.is_active:
+        raise HTTP_404_NOT_FOUND("Quiz is not active")
 
     questions_ids: list[int] = await get_question_ids(quiz)
     quiz_answers_ids: list[int] = await get_answers_ids(quiz)
@@ -80,7 +81,7 @@ async def submit_quiz(
 
     max_score = await get_quiz_max_score(quiz)
 
-    if max_score is None:
+    if not max_score:
         raise HTTP_400_BAD_REQUEST("Quiz don't have any correct questions")
 
     user_answers = quiz_request.answers
@@ -109,23 +110,18 @@ async def submit_quiz(
             user_score=user_score
         )
     )
-
     return QuizResultResponse(max_score=max_score, user_score=user_score)
 
-### CRUD
 
-# Quiz
-
-@router.post("/quiz/create", response_model=QuizScheme, status_code=201)
+@router.post("/quiz", response_model=QuizScheme, status_code=201)
 async def create_quiz(
     quiz: QuizCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> QuizScheme:
     if await crud_quiz.exists(db, quiz):
         raise HTTP_400_BAD_REQUEST("Quiz already exists")
-    quiz = await crud_quiz.create(db, new_obj=quiz)
-    return quiz
+    return await crud_quiz.create(db, new_obj=quiz)
 
 
 @router.get("/quizzes", response_model=list[QuizScheme])
@@ -133,10 +129,10 @@ async def get_quizzes(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> list[QuizScheme]:
     quizzes = await crud_quiz.get_multi(db, skip=skip, limit=limit)
-    if quizzes is None:
+    if not quizzes:
         raise HTTP_404_NOT_FOUND("Quizzes not found")
     return quizzes
 
@@ -145,10 +141,10 @@ async def get_quizzes(
 async def get_quiz(
     quiz_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> QuizScheme:
     quiz = await crud_quiz.get(db, id=quiz_id)
-    if quiz is None:
+    if not quiz:
         raise HTTP_404_NOT_FOUND("Quiz not found")
     return quiz
 
@@ -158,43 +154,43 @@ async def update_quiz(
     quiz_id: int,
     quiz_in: QuizScheme,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_superuser),
 ):
     if quiz_id != quiz_in.id:
         raise HTTP_400_BAD_REQUEST("Quiz id mismatch")
 
     quiz = await crud_quiz.get(db, id=quiz_id)
-    if quiz is None:
+    if not quiz:
         raise HTTP_404_NOT_FOUND("Quiz not found")
 
-    patched_quiz = await crud_quiz.update(db, old_obj=quiz, new_obj=quiz_in)
-    return patched_quiz
+    return await crud_quiz.update(db, old_obj=quiz, new_obj=quiz_in)
 
 
 @router.delete("/quiz/{quiz_id}")
 async def delete_quiz(
     quiz_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ):
     quiz = await crud_quiz.get(db, id=quiz_id)
-    if quiz is None:
+    if not quiz:
         raise HTTP_404_NOT_FOUND("Quiz not found")
-    quiz = await crud_quiz.delete(db, id=quiz_id)
-    return quiz
+    return await crud_quiz.delete(db, id=quiz_id)
 
-# Quiestion
 
-@router.post("/question/create", response_model=QuestionScheme, status_code=201)
+@router.post("/question", response_model=QuestionScheme, status_code=201)
 async def create_question(
     question: QuestionCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> QuestionScheme:
     if await crud_question.exists(db, question):
         raise HTTP_400_BAD_REQUEST("Question already exists")
-    question = await crud_question.create(db, new_obj=question)
-    return question
+
+    if not await crud_quiz.get(db, id=question.quiz_id):
+        raise HTTP_404_NOT_FOUND("Quiz not found")
+
+    return await crud_question.create(db, new_obj=question)
 
 
 @router.get("/questions", response_model=list[QuestionScheme])
@@ -202,10 +198,10 @@ async def get_questions(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> list[QuestionScheme]:
     questions = await crud_question.get_multi(db, skip=skip, limit=limit)
-    if questions is None:
+    if not questions:
         return HTTP_404_NOT_FOUND("Questions not found")
     return questions
 
@@ -214,10 +210,10 @@ async def get_questions(
 async def get_question(
     question_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> QuestionScheme:
     question = await crud_question.get(db, id=question_id)
-    if question is None:
+    if not question:
         raise HTTP_404_NOT_FOUND("Question not found")
     return question
 
@@ -227,43 +223,42 @@ async def update_question(
     question_id: int,
     question_in: QuestionScheme,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_superuser),
 ):
     if question_id != question_in.id:
         raise HTTP_400_BAD_REQUEST("Question id mismatch")
 
-    question = await crud_quiz.get(db, id=question_id)
-    if question is None:
+    if not await crud_quiz.get(db, id=question_in.quiz_id):
+        raise HTTP_404_NOT_FOUND("Quiz not found")
+
+    question = await crud_question.get(db, id=question_id)
+    if not question:
         raise HTTP_404_NOT_FOUND("Question not found")
 
-    patched_question = await crud_quiz.update(db, old_obj=question, new_obj=question_in)
-    return patched_question
+    return await crud_question.update(db, old_obj=question, new_obj=question_in)
 
 
 @router.delete("/question/{question_id}")
 async def delete_question(
     question_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ):
     question = await crud_question.get(db, id=question_id)
-    if question is None:
+    if not question:
         raise HTTP_404_NOT_FOUND("Question not found")
-    question = await crud_question.delete(db, id=question_id)
-    return question
+    return await crud_question.delete(db, id=question_id)
 
-# Category
 
-@router.post("/category/create", response_model=CategoryScheme, status_code=201)
+@router.post("/category", response_model=CategoryScheme, status_code=201)
 async def create_category(
     category: CategoryCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> CategoryScheme:
     if await crud_category.exists(db, category):
         raise HTTP_400_BAD_REQUEST("Category already exists")
-    category = await crud_category.create(db, new_obj=category)
-    return category
+    return await crud_category.create(db, new_obj=category)
 
 
 @router.get("/categories", response_model=list[CategoryScheme])
@@ -271,10 +266,10 @@ async def get_categories(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> list[CategoryScheme]:
-    categories = await crud_answer.get_multi(db, skip=skip, limit=limit)
-    if categories is None:
+    categories = await crud_category.get_multi(db, skip=skip, limit=limit)
+    if not categories:
         raise HTTP_404_NOT_FOUND("Categories not found")
     return categories
 
@@ -283,10 +278,10 @@ async def get_categories(
 async def get_category(
     category_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> CategoryScheme:
     category = await crud_category.get(db, id=category_id)
-    if category is None:
+    if not category:
         return HTTP_404_NOT_FOUND("Category not found")
     return category
 
@@ -296,43 +291,43 @@ async def update_category(
     category_id: int,
     category_in: CategoryScheme,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_superuser),
 ):
     if category_id != category_in.id:
         raise HTTP_400_BAD_REQUEST("Category id mismatch")
 
-    category = await crud_quiz.get(db, id=category_id)
-    if category is None:
+    category = await crud_category.get(db, id=category_id)
+    if not category:
         raise HTTP_404_NOT_FOUND("Category not found")
 
-    patched_category = await crud_quiz.update(db, old_obj=category, new_obj=category_in)
-    return patched_category
+    return await crud_category.update(db, old_obj=category, new_obj=category_in)
 
 
 @router.delete("/category/{category_id}")
 async def delete_category(
     category_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ):
     category = await crud_category.get(db, id=category_id)
-    if category is None:
+    if not category:
         raise HTTP_404_NOT_FOUND("Category not found")
-    category = await crud_category.delete(db, id=category_id)
-    return category
+    return await crud_category.delete(db, id=category_id)
 
-# Answer
 
-@router.post("/answer/create", response_model=AnswerScheme, status_code=201)
+@router.post("/answer", response_model=AnswerScheme, status_code=201)
 async def create_answer(
     answer: AnswerCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> AnswerScheme:
     if await crud_answer.exists(db, answer):
         raise HTTP_400_BAD_REQUEST("Answer already exists")
-    answer = await crud_answer.create(db, new_obj=answer)
-    return answer
+
+    if not await crud_question.get(db, id=answer.question_id):
+        raise HTTP_404_NOT_FOUND("Question not found")
+
+    return await crud_answer.create(db, new_obj=answer)
 
 
 @router.get("/answers", response_model=list[AnswerScheme])
@@ -340,10 +335,10 @@ async def get_answers(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> list[AnswerScheme]:
     answers = await crud_answer.get_multi(db, skip=skip, limit=limit)
-    if answers is None:
+    if not answers:
         raise HTTP_404_NOT_FOUND("Answers not found")
     return answers
 
@@ -352,10 +347,10 @@ async def get_answers(
 async def get_answer(
     answer_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> AnswerScheme:
     answer = await crud_answer.get(db, id=answer_id)
-    if answer is None:
+    if not answer:
         raise HTTP_404_NOT_FOUND("Answer not found")
     return answer
 
@@ -365,42 +360,42 @@ async def update_answer(
     answer_id: int,
     answer_in: AnswerScheme,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_superuser),
 ):
     if answer_id != answer_in.id:
         raise HTTP_400_BAD_REQUEST("Answer id mismatch")
 
-    answer = await crud_quiz.get(db, id=answer_id)
-    if answer is None:
+    if not await crud_question.get(db, id=answer_in.question_id):
+        raise HTTP_404_NOT_FOUND("Question not found")
+
+    answer = await crud_answer.get(db, id=answer_id)
+    if not answer:
         raise HTTP_404_NOT_FOUND("Answer not found")
 
-    patched_answer = await crud_quiz.update(db, old_obj=answer, new_obj=answer_in)
-    return patched_answer
+    return await crud_answer.update(db, old_obj=answer, new_obj=answer_in)
 
 
 @router.delete("/answer/{answer_id}")
 async def delete_answer(
     answer_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ):
     answer = await crud_answer.get(db, id=answer_id)
-    if answer is None:
+    if not answer:
         raise HTTP_404_NOT_FOUND("Answer not found")
-    answer = await crud_answer.delete(db, id=answer_id)
-    return answer
+    return await crud_answer.delete(db, id=answer_id)
 
-# Quiz Result
 
 @router.get("/results", response_model=list[QuizResultScheme])
 async def get_answers(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> list[QuizResultScheme]:
     results = await crud_quiz_result.get_multi(db, skip=skip, limit=limit)
-    if results is None:
+    if not results:
         raise HTTP_404_NOT_FOUND("Results not found")
     return results
 
@@ -409,10 +404,10 @@ async def get_answers(
 async def get_answer(
     result_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ) -> QuizResultScheme:
     result = await crud_quiz_result.get(db, id=result_id)
-    if result is None:
+    if not result:
         raise HTTP_404_NOT_FOUND("Result not found")
     return result
 
@@ -421,10 +416,9 @@ async def get_answer(
 async def delete_result(
     result_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_superuser)
 ):
     result = await crud_quiz_result.get(db, id=result_id)
-    if result is None:
+    if not result:
         raise HTTP_404_NOT_FOUND("Result not found")
-    result = await crud_quiz_result.delete(db, id=result_id)
-    return result
+    return await crud_quiz_result.delete(db, id=result_id)

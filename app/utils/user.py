@@ -10,6 +10,7 @@ from app.database.session import get_db
 from app.database.models.user import User
 from app.schemes.token import AccsessTokenData
 from app.utils.token import decode_jwt
+from app.utils.HTTP_errors import HTTP_400_BAD_REQUEST
 
 
 async def get_current_user(
@@ -20,8 +21,16 @@ async def get_current_user(
     token_expired = datetime.utcfromtimestamp(token_data.exp) < datetime.utcnow()
     user = await crud_user.get_by_email(db, email=token_data.email)
 
-    if not token_expired and user is not None:
+    if not token_expired and user:
         return user
 
-    query = "?" + f"refresh_token={token_data.refresh_token}"
+    query = f"?refresh_token={token_data.refresh_token}"
     return RedirectResponse("/refresh" + query, status_code=status.HTTP_303_SEE_OTHER)
+
+
+async def get_current_superuser(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if not crud_user.is_superuser(current_user):
+        raise HTTP_400_BAD_REQUEST("Only superusers can access this endpoint")
+    return current_user

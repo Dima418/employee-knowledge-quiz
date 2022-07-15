@@ -18,7 +18,6 @@ async def generate_quiz_response(quiz: Quiz) -> QuizResponse:
                     answer_text=answer.answer_text
                 )
             )
-
         questions_response.append(
             QuestionResponse(
                 question_id=question.id,
@@ -26,26 +25,24 @@ async def generate_quiz_response(quiz: Quiz) -> QuizResponse:
                 answer_variants=answer_variants
             )
         )
-
-    quiz_response = QuizResponse(
+    return QuizResponse(
         quiz_id=quiz.id,
         quiz_title=quiz.title,
         quiz_description=quiz.description,
         questions=questions_response,
     )
-    return quiz_response
 
 
 async def get_quiz_max_score(quiz: Quiz) -> int | None:
     max_score: int = 0
     for question in quiz.questions:
         max_score += len(question.answers)
-    return max_score if max_score > 0 else None
+    return max_score or None
 
 
 async def get_question_ids(quiz: Quiz) -> list[int] | None:
     questions_ids: list[int] = [question.id for question in quiz.questions]
-    return questions_ids if questions_ids else None
+    return questions_ids or None
 
 
 async def get_answers_ids(quiz: Quiz) -> list[int] | None:
@@ -53,8 +50,7 @@ async def get_answers_ids(quiz: Quiz) -> list[int] | None:
     for question in quiz.questions:
         for answer in question.answers:
             answers_ids.append(answer.id)
-
-    return answers_ids if answers_ids else None
+    return answers_ids or None
 
 
 async def get_real_answers(quiz: Quiz) -> list[Answer]:
@@ -62,5 +58,4 @@ async def get_real_answers(quiz: Quiz) -> list[Answer]:
     for question in quiz.questions:
         for answer in question.answers:
             answers.append(answer)
-
     return answers

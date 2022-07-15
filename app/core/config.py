@@ -4,28 +4,25 @@ from starlette.config import Config
 from starlette.datastructures import Secret
 from databases import DatabaseURL
 
+
 load_dotenv()
 
 config = Config(".env")
 
-# Project properties
-
-PROJECT_NAME = "Employee Knowledge Quiz"
-VERSION = "0.0.4"
-API_PREFIX = "/api"
-
-# Security properties
+PROJECT_NAME: str = "Employee Knowledge Quiz"
+VERSION: str = "0.0.4"
+API_PREFIX: str = "/api"
+BACKEND_CORS_ORIGINS: list[str] = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080"
+]
 
 ENCODING_ALGORITHM: str = "HS256"
 SECRET_KEY: str = secrets.token_urlsafe(32)
 ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 # 1 hour
 REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 1 day
 
-# Authentication route endpoint
-
 JWT_AUTH_PATH: str = "/signin"
-
-# Database connection properties
 
 POSTGRES_USER: str = config("POSTGRES_USER", cast=str)
 POSTGRES_PASSWORD: Secret = config("POSTGRES_PASSWORD", cast=Secret)

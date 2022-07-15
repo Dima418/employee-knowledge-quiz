@@ -20,8 +20,7 @@ async def create_jwt(token_data: dict, refresh: bool = False) -> str:
     to_encode = token_data.copy()
     to_encode.update({"exp": expire})
 
-    encoded_jwt = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ENCODING_ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ENCODING_ALGORITHM)
 
 
 async def verify_password(plain_password: str, hashed_password: str) -> bool:
