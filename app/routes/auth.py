@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, Header
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.core import config
 from app.crud.user import crud_user
 from app.database.session import get_db
 from app.schemes.user import UserBase, UserSignUp
@@ -14,9 +13,8 @@ from app.utils.token import decode_jwt, create_new_jwt
 
 
 router = APIRouter(tags=["auth"])
-jwt_auth_path = config.JWT_AUTH_PATH
 
-@router.post(jwt_auth_path, response_model=TokenResponce)
+@router.post("/signin", response_model=TokenResponce)
 async def signin_jwt(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()) -> TokenResponce:
     user = await crud_user.authenticate(
         db,

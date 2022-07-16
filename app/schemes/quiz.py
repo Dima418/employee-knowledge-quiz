@@ -48,6 +48,7 @@ class QuizResultResponse(BaseModel):
 class QuizCreate(BaseModel):
     title: str
     description: str
+    is_active: bool | None = True
 
 
 class CategoryCreate(BaseModel):
@@ -64,6 +65,13 @@ class AnswerCreate(BaseModel):
     question_id: int
     answer_text: str
     is_correct: bool
+
+
+class QuizResultCreate(BaseModel):
+    user_id: int
+    quiz_id: int
+    user_score: int = 0
+    max_score: int = 1
 
 
 class QuizScheme(BaseModel):

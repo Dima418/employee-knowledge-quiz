@@ -8,7 +8,7 @@ from app.core import config
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{config.JWT_AUTH_PATH}")
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/signin")
 
 async def create_jwt(token_data: dict, refresh: bool = False) -> str:
     if refresh:
