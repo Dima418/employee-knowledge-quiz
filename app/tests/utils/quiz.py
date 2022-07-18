@@ -23,22 +23,22 @@ from app.schemes.quiz import (
 from app.tests.utils.utils import random_lower_string
 
 
-async def create_random_quiz(db: Session, is_active: bool = True) -> Quiz:
+async def create_random_quiz(db: Session, title: str = None, description: str = None, is_active: bool = True) -> Quiz:
     return await crud_quiz.create(
         db=db,
         new_obj=QuizCreate(
-            title=await random_lower_string(),
-            description=await random_lower_string(),
+            title=title or await random_lower_string(),
+            description=description or await random_lower_string(),
             is_active=is_active
         )
     )
 
 
-async def get_nonexistent_quiz(is_active: bool = True) -> Quiz:
+async def get_nonexistent_quiz() -> Quiz:
     return Quiz(
         title=await random_lower_string(),
         description=await random_lower_string(),
-        is_active=is_active
+        is_active=False
     )
 
 

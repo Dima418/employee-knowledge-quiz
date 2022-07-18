@@ -22,7 +22,7 @@ class CRUDUser(CRUDBase[User, UserSignUp | UserCreate, UserUpdate]):
             name=obj_in.name,
             email=obj_in.email,
             password=await get_password_hash(obj_in.password),
-            is_superuser=obj_in.is_superuser or False,
+            is_superuser=getattr(obj_in, "is_superuser", False),
         )
         db.add(db_obj)
         db.commit()

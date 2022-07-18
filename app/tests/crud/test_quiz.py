@@ -1,9 +1,15 @@
 from random import randint
 
-import pytest
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
+from app.database.models.quiz import (
+    Quiz,
+    Question,
+    Category,
+    Answer,
+    QuizResult
+)
 from app.crud.quiz import (
     crud_quiz,
     crud_question,
@@ -33,328 +39,237 @@ from app.tests.utils.utils import random_lower_string
 from app.tests.utils.user import create_random_user
 
 
-@pytest.mark.anyio
-async def test_quiz_exists(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    assert await crud_quiz.exists(db, quiz)
+async def test_quiz_exists(db: Session, new_active_quiz: Quiz) -> None:
+    assert await crud_quiz.exists(db, new_active_quiz)
 
 
-@pytest.mark.anyio
-async def test_quiz_not_exists(db: Session) -> None:
-    quiz = await get_nonexistent_quiz()
-    assert not await crud_quiz.exists(db, quiz)
+async def test_quiz_not_exists(db: Session, nonexistent_quiz: Quiz) -> None:
+    assert not await crud_quiz.exists(db, nonexistent_quiz)
 
 
-@pytest.mark.anyio
-async def test_create_quiz(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    assert await crud_quiz.exists(db, quiz)
-    assert hasattr(quiz, "title")
-    assert quiz.title
-    assert hasattr(quiz, "description")
-    assert quiz.description
+async def test_create_quiz(db: Session, new_active_quiz: Quiz) -> None:
+    assert await crud_quiz.exists(db, new_active_quiz)
+    assert hasattr(new_active_quiz, "title")
+    assert new_active_quiz.title
+    assert hasattr(new_active_quiz, "description")
+    assert new_active_quiz.description
 
 
-@pytest.mark.anyio
-async def test_create_quiz_is_active(db: Session) -> None:
-    quiz = await create_random_quiz(db=db, is_active=True)
-    assert await crud_quiz.exists(db, quiz)
-    assert quiz.is_active
+
+async def test_create_quiz_is_active(db: Session, new_active_quiz: Quiz) -> None:
+    assert await crud_quiz.exists(db, new_active_quiz)
+    assert new_active_quiz.is_active
 
 
-@pytest.mark.anyio
-async def test_create_quiz_is_active(db: Session) -> None:
-    quiz = await create_random_quiz(db=db, is_active=False)
-    assert await crud_quiz.exists(db, quiz)
-    assert not quiz.is_active
+async def test_create_quiz_is_active(db: Session, new_inactive_quiz: Quiz) -> None:
+    assert await crud_quiz.exists(db, new_inactive_quiz)
+    assert not new_inactive_quiz.is_active
 
 
-@pytest.mark.anyio
-async def test_get_quiz(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    quiz_2 = await crud_quiz.get(db, id=quiz.id)
-    assert quiz_2
-    assert quiz.title == quiz_2.title
-    assert quiz.description == quiz_2.description
-    assert jsonable_encoder(quiz) == jsonable_encoder(quiz_2)
+async def test_get_quiz(db: Session, new_active_quiz: Quiz) -> None:
+    same_quiz = await crud_quiz.get(db, id=new_active_quiz.id)
+    assert same_quiz
+    assert new_active_quiz.title == same_quiz.title
+    assert new_active_quiz.description == same_quiz.description
+    assert jsonable_encoder(new_active_quiz) == jsonable_encoder(same_quiz)
 
 
-@pytest.mark.anyio
-async def test_update_quiz(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
+async def test_update_quiz_title_and_description(db: Session, new_active_quiz: Quiz) -> None:
     new_title = await random_lower_string()
     new_description = await random_lower_string()
     await crud_quiz.update(
         db,
-        old_obj=quiz,
+        old_obj=new_active_quiz,
         new_obj=QuizCreate(
             title=new_title,
             description=new_description
         )
     )
-    quiz_2 = await crud_quiz.get(db, id=quiz.id)
-    assert quiz_2
-    assert quiz_2.id == quiz.id
-    assert quiz_2.title == new_title
-    assert quiz_2.description == new_description
+    same_quiz = await crud_quiz.get(db, id=new_active_quiz.id)
+    assert same_quiz
+    assert same_quiz.id == new_active_quiz.id
+    assert same_quiz.title == new_title
+    assert same_quiz.description == new_description
 
 
-@pytest.mark.anyio
-async def test_delete_quiz(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    await crud_quiz.delete(db, id=quiz.id)
-    assert not await crud_quiz.exists(db, quiz)
+async def test_delete_quiz(db: Session, new_active_quiz: Quiz) -> None:
+    await crud_quiz.delete(db, id=new_active_quiz.id)
+    assert not await crud_quiz.exists(db, new_active_quiz)
 
 
-@pytest.mark.anyio
-async def test_question_exists(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    assert await crud_question.exists(db, question)
+async def test_question_exists(db: Session, new_question: Question) -> None:
+    assert await crud_question.exists(db, new_question)
 
 
-@pytest.mark.anyio
-async def test_question_not_exists(db: Session) -> None:
-    question = await get_nonexistent_question()
-    assert not await crud_question.exists(db, question)
+async def test_question_not_exists(db: Session, nonexistent_question: Question) -> None:
+    assert not await crud_question.exists(db, nonexistent_question)
 
 
-@pytest.mark.anyio
-async def test_create_question(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    assert await crud_question.exists(db, question)
-    assert hasattr(question, "question_text")
-    assert question.question_text
-    assert hasattr(question, "quiz_id")
-    assert question.quiz_id == quiz.id
+async def test_create_question(db: Session, new_question: Question) -> None:
+    assert await crud_question.exists(db, new_question)
+    assert hasattr(new_question, "question_text")
+    assert new_question.question_text
+    assert hasattr(new_question, "quiz_id")
+    assert new_question.quiz_id
 
 
-@pytest.mark.anyio
-async def test_get_question(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    question_2 = await crud_question.get(db, id=question.id)
-    assert question_2
-    assert question.question_text == question_2.question_text
-    assert jsonable_encoder(question) == jsonable_encoder(question_2)
+async def test_get_question(db: Session, new_question: Question) -> None:
+    same_question = await crud_question.get(db, id=new_question.id)
+    assert same_question
+    assert new_question.question_text == same_question.question_text
+    assert jsonable_encoder(new_question) == jsonable_encoder(same_question)
 
 
-@pytest.mark.anyio
-async def test_update_question(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
+async def test_update_question_text(db: Session, new_question: Question) -> None:
     new_question_text = await random_lower_string()
     await crud_question.update(
         db,
-        old_obj=question,
+        old_obj=new_question,
         new_obj=QuestionCreate(
-            quiz_id=quiz.id,
+            quiz_id=new_question.quiz_id,
             question_text=new_question_text
         )
     )
-    question_2 = await crud_question.get(db, id=question.id)
-    assert question_2
-    assert question_2.id == question.id
-    assert question_2.question_text == new_question_text
+    same_question = await crud_question.get(db, id=new_question.id)
+    assert same_question
+    assert same_question.id == new_question.id
+    assert same_question.question_text == new_question_text
 
 
-@pytest.mark.anyio
-async def test_delete_question(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    await crud_question.delete(db, id=question.id)
-    assert not await crud_question.exists(db, question)
+async def test_delete_question(db: Session, new_question: Question) -> None:
+    await crud_question.delete(db, id=new_question.id)
+    assert not await crud_question.exists(db, new_question)
 
 
-@pytest.mark.anyio
-async def test_category_exists(db: Session) -> None:
-    category = await create_random_category(db=db)
-    assert await crud_category.exists(db, category)
+async def test_category_exists(db: Session, new_category: Category) -> None:
+    assert await crud_category.exists(db, new_category)
 
 
-@pytest.mark.anyio
-async def test_category_not_exists(db: Session) -> None:
-    category = await get_nonexistent_category()
-    assert not await crud_category.exists(db, category)
+async def test_category_not_exists(db: Session, nonexistent_category: Category) -> None:
+    assert not await crud_category.exists(db, nonexistent_category)
 
 
-@pytest.mark.anyio
-async def test_create_category(db: Session) -> None:
-    category = await create_random_category(db=db)
-    assert await crud_category.exists(db, category)
-    assert hasattr(category, "name")
-    assert category.name
-    assert hasattr(category, "description")
-    assert category.description
-
-TEST_USER_SCORE: int = 10
-
-@pytest.mark.anyio
-async def test_get_category(db: Session) -> None:
-    category = await create_random_category(db=db)
-    category_2 = await crud_category.get(db, id=category.id)
-    assert category_2
-    assert category.name == category_2.name
-    assert category.description == category_2.description
-    assert jsonable_encoder(category) == jsonable_encoder(category_2)
+async def test_create_category(db: Session, new_category: Category) -> None:
+    assert await crud_category.exists(db, new_category)
+    assert hasattr(new_category, "name")
+    assert new_category.name
+    assert hasattr(new_category, "description")
+    assert new_category.description
 
 
-@pytest.mark.anyio
-async def test_update_category(db: Session) -> None:
-    category = await create_random_category(db=db)
+async def test_get_category(db: Session, new_category: Category) -> None:
+    same_category = await crud_category.get(db, id=new_category.id)
+    assert same_category
+    assert new_category.name == same_category.name
+    assert new_category.description == same_category.description
+    assert jsonable_encoder(new_category) == jsonable_encoder(same_category)
+
+
+async def test_update_category(db: Session, new_category: Category) -> None:
     new_category_name = await random_lower_string()
     new_category_description = await random_lower_string()
     await crud_category.update(
         db,
-        old_obj=category,
+        old_obj=new_category,
         new_obj=CategoryCreate(
             name=new_category_name,
             description=new_category_description
         )
     )
-    category_2 = await crud_category.get(db, id=category.id)
-    assert category_2
-    assert category_2.id == category.id
-    assert category_2.name == new_category_name
-    assert category_2.description == new_category_description
+    same_category = await crud_category.get(db, id=new_category.id)
+    assert same_category
+    assert same_category.id == new_category.id
+    assert same_category.name == new_category_name
+    assert same_category.description == new_category_description
 
 
-@pytest.mark.anyio
-async def test_delete_category(db: Session) -> None:
-    category = await create_random_category(db=db)
-    await crud_category.delete(db, id=category.id)
-    assert not await crud_category.exists(db, category)
+async def test_delete_category(db: Session, new_category: Category) -> None:
+    await crud_category.delete(db, id=new_category.id)
+    assert not await crud_category.exists(db, new_category)
 
 
-@pytest.mark.anyio
-async def test_answer_exists(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    answer = await create_random_answer(db=db, question_id=question.id)
-    assert await crud_answer.exists(db, answer)
+async def test_answer_exists(db: Session, new_correct_answer: Answer) -> None:
+    assert await crud_answer.exists(db, new_correct_answer)
 
 
-@pytest.mark.anyio
-async def test_answer_not_exists(db: Session) -> None:
-    question = await get_nonexistent_answer()
-    assert not await crud_answer.exists(db, question)
+async def test_answer_not_exists(db: Session, nonexistent_answer: Answer) -> None:
+    assert not await crud_answer.exists(db, nonexistent_answer)
 
 
-@pytest.mark.anyio
-async def test_create_correct_answer(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    answer = await create_random_answer(db=db, question_id=question.id, is_correct=True)
-    assert await crud_answer.exists(db, answer)
-    assert answer.question_id == question.id
-    assert answer.question.quiz_id == quiz.id
-    assert answer.is_correct
+async def test_create_correct_answer(db: Session, new_correct_answer: Answer) -> None:
+    assert await crud_answer.exists(db, new_correct_answer)
+    assert new_correct_answer.is_correct
 
 
-@pytest.mark.anyio
-async def test_create_incorrect_answer(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    answer = await create_random_answer(db=db, question_id=question.id, is_correct=False)
-    assert await crud_answer.exists(db, answer)
-    assert answer.question_id == question.id
-    assert answer.question.quiz_id == quiz.id
-    assert not answer.is_correct
+async def test_create_incorrect_answer(db: Session, new_incorrect_answer: Answer) -> None:
+    assert await crud_answer.exists(db, new_incorrect_answer)
+    assert not new_incorrect_answer.is_correct
 
 
-@pytest.mark.anyio
-async def test_get_answer(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    answer = await create_random_answer(db=db, question_id=question.id)
-    answer_2 = await crud_answer.get(db, id=answer.id)
-    assert answer_2
-    assert answer_2.id == answer.id
-    assert jsonable_encoder(answer_2) == jsonable_encoder(answer)
+async def test_get_answer(db: Session, new_correct_answer: Answer) -> None:
+    same_answer = await crud_answer.get(db, id=new_correct_answer.id)
+    assert same_answer
+    assert same_answer.id == new_correct_answer.id
+    assert jsonable_encoder(same_answer) == jsonable_encoder(new_correct_answer)
 
 
-@pytest.mark.anyio
-async def test_update_answer_text(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    answer = await create_random_answer(db=db, question_id=question.id)
+async def test_update_answer_text(db: Session, new_correct_answer: Answer) -> None:
     new_answer_text = await random_lower_string()
     await crud_answer.update(
         db,
-        old_obj=answer,
+        old_obj=new_correct_answer,
         new_obj=AnswerCreate(
-            question_id=question.id,
+            question_id=new_correct_answer.question_id,
             answer_text=new_answer_text,
-            is_correct=answer.is_correct
+            is_correct=new_correct_answer.is_correct
         )
     )
-    answer_2 = await crud_answer.get(db, id=answer.id)
-    assert answer_2
-    assert answer_2.id == answer.id
-    assert answer_2.answer_text == new_answer_text
+    same_answer = await crud_answer.get(db, id=new_correct_answer.id)
+    assert same_answer
+    assert same_answer.id == new_correct_answer.id
+    assert same_answer.answer_text == new_answer_text
 
 
-@pytest.mark.anyio
-async def test_delete_answer(db: Session) -> None:
-    quiz = await create_random_quiz(db=db)
-    question = await create_random_question(db=db, quiz_id=quiz.id)
-    answer = await create_random_answer(db=db, question_id=question.id)
-    await crud_answer.delete(db, id=answer.id)
-    assert not await crud_answer.exists(db, answer)
+async def test_delete_answer(db: Session, new_correct_answer: Answer) -> None:
+    await crud_answer.delete(db, id=new_correct_answer.id)
+    assert not await crud_answer.exists(db, new_correct_answer)
 
 
-@pytest.mark.anyio
-async def test_create_quiz_result(db: Session) -> None:
-    user = await create_random_user(db=db)
-    quiz = await create_random_quiz(db=db)
-    quiz_result = await create_quiz_result(db=db, user_id=user.id, quiz_id=quiz.id)
-    assert quiz_result
-    assert quiz_result.user_id == user.id
-    assert quiz_result.quiz_id == quiz.id
-    assert quiz_result.user_score
-    assert quiz_result.max_score
+async def test_create_quiz_result(db: Session, new_quiz_result: QuizResult) -> None:
+    assert new_quiz_result
+    assert new_quiz_result.user_id
+    assert new_quiz_result.quiz_id
+    assert new_quiz_result.user_score
+    assert new_quiz_result.max_score
 
 
-@pytest.mark.anyio
-async def test_get_quiz_result(db: Session) -> None:
-    user = await create_random_user(db=db)
-    quiz = await create_random_quiz(db=db)
-    quiz_result = await create_quiz_result(db=db, user_id=user.id, quiz_id=quiz.id)
-    quiz_result_2 = await crud_quiz_result.get(db, id=quiz_result.id)
-    assert quiz_result_2
-    assert quiz_result_2.id == quiz_result.id
-    assert jsonable_encoder(quiz_result_2) == jsonable_encoder(quiz_result)
+async def test_get_quiz_result(db: Session, new_quiz_result: QuizResult) -> None:
+    same_quiz_result = await crud_quiz_result.get(db, id=new_quiz_result.id)
+    assert same_quiz_result
+    assert same_quiz_result.id == new_quiz_result.id
+    assert jsonable_encoder(same_quiz_result) == jsonable_encoder(new_quiz_result)
 
 
-@pytest.mark.anyio
-async def test_update_answer_text(db: Session) -> None:
-    user = await create_random_user(db=db)
-    quiz = await create_random_quiz(db=db)
-    quiz_result = await create_quiz_result(db=db, user_id=user.id, quiz_id=quiz.id)
+async def test_update_answer_text(db: Session, new_quiz_result: QuizResult) -> None:
     new_user_score = randint(0, 100)
     new_max_score = new_user_score + randint(0, 100)
     await crud_quiz_result.update(
         db,
-        old_obj=quiz_result,
+        old_obj=new_quiz_result,
         new_obj=QuizResultCreate(
-            user_id=user.id,
-            quiz_id=quiz.id,
+            user_id=new_quiz_result.user_id,
+            quiz_id=new_quiz_result.quiz_id,
             user_score=new_user_score,
             max_score=new_max_score
         )
     )
-    quiz_result_2 = await crud_quiz_result.get(db, id=quiz_result.id)
-    assert quiz_result_2
-    assert quiz_result_2.id == quiz_result.id
-    assert quiz_result_2.user_score == new_user_score
-    assert quiz_result_2.max_score == new_max_score
+    same_quiz_result = await crud_quiz_result.get(db, id=new_quiz_result.id)
+    assert same_quiz_result
+    assert same_quiz_result.id == new_quiz_result.id
+    assert same_quiz_result.user_score == new_user_score
+    assert same_quiz_result.max_score == new_max_score
 
 
-@pytest.mark.anyio
-async def test_delete_answer(db: Session) -> None:
-    user = await create_random_user(db=db)
-    quiz = await create_random_quiz(db=db)
-    quiz_result = await create_quiz_result(db=db, user_id=user.id, quiz_id=quiz.id)
-    await crud_quiz_result.delete(db, id=quiz_result.id)
-    assert not await crud_quiz_result.get(db, id=quiz_result.id)
+async def test_delete_answer(db: Session, new_quiz_result: QuizResult) -> None:
+    await crud_quiz_result.delete(db, id=new_quiz_result.id)
+    assert not await crud_quiz_result.get(db, id=new_quiz_result.id)
