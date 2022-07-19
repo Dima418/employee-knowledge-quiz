@@ -24,19 +24,7 @@ from app.schemes.quiz import (
     AnswerCreate,
     QuizResultCreate
 )
-from app.tests.utils.quiz import (
-    create_random_quiz,
-    create_random_question,
-    create_random_category,
-    create_random_answer,
-    create_quiz_result,
-    get_nonexistent_quiz,
-    get_nonexistent_question,
-    get_nonexistent_category,
-    get_nonexistent_answer
-)
 from app.tests.utils.utils import random_lower_string
-from app.tests.utils.user import create_random_user
 
 
 async def test_quiz_exists(db: Session, new_active_quiz: Quiz) -> None:

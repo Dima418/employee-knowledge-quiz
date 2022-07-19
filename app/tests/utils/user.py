@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 from httpx import AsyncClient
 
-from app.core import config
 from app.crud.user import crud_user
 from app.database.models.user import User
 from app.schemes.user import UserCreate
@@ -20,12 +19,10 @@ async def create_random_user(db: Session, email: str = None, password: str = Non
     )
 
 
-async def get_access_token(client: AsyncClient, email: str, password: str) -> dict[str, str]:
+async def get_access_token(client: AsyncClient, email: str, password: str) -> str:
     login_data = {
-        "username": config.FIRST_SUPERUSER_EMAIL,
-        "password": config.FIRST_SUPERUSER_PASSWORD,
-        # "username": email,
-        # "password": password,
+        "username": email,
+        "password": password,
         "scope": None,
         "client_id": None,
         "client_secret": None,
@@ -34,5 +31,5 @@ async def get_access_token(client: AsyncClient, email: str, password: str) -> di
     return r.json()["access_token"]
 
 
-async def get_user_authentication_headers(client: AsyncClient, email: str, password: str) -> str:
+async def get_user_authentication_headers(client: AsyncClient, email: str, password: str) -> dict[str: str]:
     return {"Authorization": f"Bearer {await get_access_token(client, email, password)}"}

@@ -9,7 +9,7 @@ from app.tests.utils.user import create_random_user
 from app.tests.utils.utils import random_email, random_lower_string
 
 
-async def test_create_normal_user(db: Session, new_normal_user: User) -> None:
+async def test_create_normal_user(new_normal_user: User) -> None:
     assert hasattr(new_normal_user, "email")
     assert new_normal_user.email
     assert hasattr(new_normal_user, "password")
@@ -17,7 +17,7 @@ async def test_create_normal_user(db: Session, new_normal_user: User) -> None:
     assert not new_normal_user.is_superuser
 
 
-async def test_create_superuser(db: Session, new_superuser: User) -> None:
+async def test_create_superuser(new_superuser: User) -> None:
     assert hasattr(new_superuser, "email")
     assert new_superuser.email
     assert hasattr(new_superuser, "password")
@@ -41,11 +41,11 @@ async def test_not_authenticate_user(db: Session) -> None:
     assert not user
 
 
-async def test_check_if_user_is_superuser(db: Session, new_superuser: User) -> None:
+async def test_check_if_user_is_superuser(new_superuser: User) -> None:
     assert await crud_user.is_superuser(new_superuser)
 
 
-async def test_check_if_normal_user_is_superuser(db: Session, new_normal_user: User) -> None:
+async def test_check_if_normal_user_is_superuser(new_normal_user: User) -> None:
     assert not await crud_user.is_superuser(new_normal_user)
 
 

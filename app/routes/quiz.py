@@ -43,7 +43,7 @@ from app.utils.HTTP_errors import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 router = APIRouter(tags=["quiz"])
 
 @router.get("/quiz/{quiz_id}/view", response_model=QuizResponse)
-async def all_quizzes(
+async def view_quiz(
     quiz_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -274,7 +274,7 @@ async def get_categories(
     return categories
 
 
-@router.get("/category/{category_id}", response_model=CategoryScheme)
+@router.get("/category/{category_id}")
 async def get_category(
     category_id: int,
     db: Session = Depends(get_db),
@@ -331,7 +331,7 @@ async def create_answer(
 
 
 @router.get("/answers", response_model=list[AnswerScheme])
-async def get_answers(
+async def get_results(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
@@ -344,7 +344,7 @@ async def get_answers(
 
 
 @router.get("/answer/{answer_id}", response_model=AnswerScheme)
-async def get_answer(
+async def get_result(
     answer_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)
@@ -388,7 +388,7 @@ async def delete_answer(
 
 
 @router.get("/results", response_model=list[QuizResultScheme])
-async def get_answers(
+async def get_results(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
@@ -401,7 +401,7 @@ async def get_answers(
 
 
 @router.get("/result/{result_id}", response_model=QuizResultScheme)
-async def get_answer(
+async def get_result(
     result_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)

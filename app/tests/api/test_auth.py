@@ -1,12 +1,13 @@
 from httpx import AsyncClient
 
 from app.core import config
+from app.database.models.user import User
 from app.schemes.token import AccsessTokenData
 from app.utils.token import decode_jwt
 from app.tests.utils.utils import random_lower_string, random_email
 
 
-async def test_get_access_token(client: AsyncClient, first_superuser: dict[str, str]) -> None:
+async def test_get_access_token(client: AsyncClient, first_superuser: User) -> None:
     login_data = {
         "username": config.FIRST_SUPERUSER_EMAIL,
         "password": config.FIRST_SUPERUSER_PASSWORD,
@@ -21,13 +22,13 @@ async def test_get_access_token(client: AsyncClient, first_superuser: dict[str, 
     assert response_json["access_token"]
 
 
-async def test_use_access_token(client: AsyncClient, superuser_token_headers: dict[str, str]) -> None:
+async def test_use_access_token(client: AsyncClient, superuser_token_headers: dict[str: str]) -> None:
     r = await client.post("/test-token", headers=await superuser_token_headers)
     assert r.status_code == 200
     assert "email" in r.json()
 
 
-async def test_refresh_token(client: AsyncClient, superuser_access_token) -> None:
+async def test_refresh_token(client: AsyncClient, superuser_access_token: dict[str: str]) -> None:
     token_data: AccsessTokenData = await decode_jwt(superuser_access_token, AccsessTokenData)
     r = await client.post(f"/refresh?refresh_token={token_data.refresh_token}")
     response_json = r.json()

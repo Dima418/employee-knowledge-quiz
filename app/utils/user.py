@@ -31,6 +31,6 @@ async def get_current_user(
 async def get_current_superuser(
     current_user: User = Depends(get_current_user),
 ) -> User:
-    if not crud_user.is_superuser(current_user):
+    if not await crud_user.is_superuser(current_user):
         raise HTTP_400_BAD_REQUEST("Only superusers can access this endpoint")
     return current_user
