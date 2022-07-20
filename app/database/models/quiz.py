@@ -19,8 +19,8 @@ from app.database.base_class import Base
 questions_categories = Table(
     "questions_categories",
     Base.metadata,
-    Column("question_id", ForeignKey("questions.id"), primary_key=True),
-    Column("category_id", ForeignKey("categories.id"), primary_key=True),
+    Column("question_id", ForeignKey("questions.id", ondelete="SET NULL"), primary_key=True),
+    Column("category_id", ForeignKey("categories.id", ondelete="SET NULL"), primary_key=True),
 )
 
 
@@ -44,7 +44,7 @@ class Question(Base):
     question_text = Column(String, nullable=False)
 
     # bidirectional one-to-many relationship with Quiz
-    quiz_id = Column(Integer, ForeignKey("quizzes.id"), nullable=False)
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
     quiz = relationship("Quiz", back_populates="questions")
 
     # many-to-many relationship with Category
@@ -66,14 +66,13 @@ class Category(Base):
 
 class Answer(Base):
     __tablename__ = "answers"
-    answer_text = Column(String, primary_key=True)
-    is_correct = Column(Boolean, default=False, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
+    answer_text = Column(String, nullable=False)
+    is_correct = Column(Boolean, default=False, nullable=False)
 
     # bidirectional one-to-many relationship with Question
-    question_id = Column(Integer, ForeignKey("questions.id"), primary_key=True)
+    question_id = Column(Integer, ForeignKey("questions.id", ondelete="SET NULL"), nullable=True)
     question = relationship("Question", back_populates="answers")
-
-    id = Column(Integer, Sequence("answers_id_seq", start=1, increment=1), server_default=func.nextval("answers_id_seq"))
 
 
 class QuizResult(Base):
@@ -84,9 +83,9 @@ class QuizResult(Base):
     finished_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # bidirectional one-to-many relationship with Question
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
     user = relationship("User", back_populates="quiz_results")
 
     # bidirectional one-to-manyrelationship with Question
-    quiz_id = Column(Integer, ForeignKey("quizzes.id"), nullable=False)
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
     quiz = relationship("Quiz", back_populates="quiz_resultss")
