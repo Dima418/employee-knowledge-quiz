@@ -315,4 +315,3 @@ async def test_delete_result(client: AsyncClient, superuser_token_headers: dict[
     assert response_data["user_score"] == new_quiz_result.user_score
     assert response_data["max_score"] == new_quiz_result.max_score
     assert datetime.fromisoformat(response_data["finished_at"]) == new_quiz_result.finished_at
-
