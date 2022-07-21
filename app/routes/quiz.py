@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from typing import Union
+from fastapi import HTTPException
 from app.crud.quiz import (
     crud_answer,
     crud_quiz,
@@ -43,7 +44,7 @@ from app.utils.HTTP_errors import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 router = APIRouter(tags=["quiz"])
 
 @router.get("/quiz/{quiz_id}/view", response_model=QuizResponse)
-async def all_quizzes(
+async def view_quiz(
     quiz_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -131,10 +132,7 @@ async def get_quizzes(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)
 ) -> list[QuizScheme]:
-    quizzes = await crud_quiz.get_multi(db, skip=skip, limit=limit)
-    if not quizzes:
-        raise HTTP_404_NOT_FOUND("Quizzes not found")
-    return quizzes
+    return await crud_quiz.get_multi(db, skip=skip, limit=limit)
 
 
 @router.get("/quiz/{quiz_id}", response_model=QuizScheme)
@@ -200,10 +198,7 @@ async def get_questions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)
 ) -> list[QuestionScheme]:
-    questions = await crud_question.get_multi(db, skip=skip, limit=limit)
-    if not questions:
-        return HTTP_404_NOT_FOUND("Questions not found")
-    return questions
+    return await crud_question.get_multi(db, skip=skip, limit=limit)
 
 
 @router.get("/question/{question_id}", response_model=QuestionScheme)
@@ -268,13 +263,10 @@ async def get_categories(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)
 ) -> list[CategoryScheme]:
-    categories = await crud_category.get_multi(db, skip=skip, limit=limit)
-    if not categories:
-        raise HTTP_404_NOT_FOUND("Categories not found")
-    return categories
+    return await crud_category.get_multi(db, skip=skip, limit=limit)
 
 
-@router.get("/category/{category_id}", response_model=CategoryScheme)
+@router.get("/category/{category_id}")
 async def get_category(
     category_id: int,
     db: Session = Depends(get_db),
@@ -331,20 +323,17 @@ async def create_answer(
 
 
 @router.get("/answers", response_model=list[AnswerScheme])
-async def get_answers(
+async def get_results(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)
 ) -> list[AnswerScheme]:
-    answers = await crud_answer.get_multi(db, skip=skip, limit=limit)
-    if not answers:
-        raise HTTP_404_NOT_FOUND("Answers not found")
-    return answers
+    return await crud_answer.get_multi(db, skip=skip, limit=limit)
 
 
 @router.get("/answer/{answer_id}", response_model=AnswerScheme)
-async def get_answer(
+async def get_result(
     answer_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)
@@ -388,20 +377,17 @@ async def delete_answer(
 
 
 @router.get("/results", response_model=list[QuizResultScheme])
-async def get_answers(
+async def get_results(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)
 ) -> list[QuizResultScheme]:
-    results = await crud_quiz_result.get_multi(db, skip=skip, limit=limit)
-    if not results:
-        raise HTTP_404_NOT_FOUND("Results not found")
-    return results
+    return await crud_quiz_result.get_multi(db, skip=skip, limit=limit)
 
 
 @router.get("/result/{result_id}", response_model=QuizResultScheme)
-async def get_answer(
+async def get_result(
     result_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)

@@ -21,7 +21,7 @@ async def decode_jwt(
     return token_data
 
 
-async def create_new_jwt(token_data) -> TokenResponce:
+async def create_new_jwt(token_data: dict[str: str]) -> TokenResponce:
     refresh_token= await create_jwt(token_data, refresh=True)
     token_data.update({"refresh_token": refresh_token})
     access_token= await create_jwt(token_data)

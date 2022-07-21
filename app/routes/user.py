@@ -50,4 +50,7 @@ async def delete_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_superuser)
 ):
+    user = await crud_user.get(db, id=user_id)
+    if not user:
+        raise HTTP_404_NOT_FOUND("User not found")
     return await crud_user.delete(db, id=user_id)

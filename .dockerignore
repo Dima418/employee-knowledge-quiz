@@ -7,9 +7,17 @@
 **/__pycache__/
 /__pycache__/*
 **/*.pyc
+**/*.pyo
+/.pytest_cache
+/.pytest_cache/
+/.pytest_cache/*
+**/*.pytest_cache
+**/*.pytest_cache/
+**/*.pytest_cache/*
 
 ### Git ###
 .git
+.git/
 .git/*
 
 ### Venv ###

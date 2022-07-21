@@ -46,6 +46,15 @@ class UserSignIn(BaseModel):
         orm_mode = True
 
 
+class UserCreate(UserSignIn):
+    name: str
+    is_superuser: bool | None = False
+
+
 class UserUpdate(BaseModel):
     name: str
     email: EmailStr
+
+
+class UserUpdatePassword(BaseModel):
+    password: str

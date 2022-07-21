@@ -46,7 +46,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return old_obj
 
     async def delete(self, db: Session, *, id: int) -> ModelType:
-        obj = db.query(self.model).get(id)
+        obj = db.query(self.model).filter(self.model.id == id).first()
         db.delete(obj)
         db.commit()
         return obj
