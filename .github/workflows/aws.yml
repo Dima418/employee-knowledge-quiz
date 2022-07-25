@@ -53,8 +53,8 @@ jobs:
       id: download-td
       run: |
         aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION_NAME }} > ${{ env.ECS_TASK_DEFINITION }}
-        sed "2d" td.json -i
-        sed "$ d" td.json -i
+        sed "2d" ${{ env.ECS_TASK_DEFINITION }} -i
+        sed "$ d" ${{ env.ECS_TASK_DEFINITION }} -i
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
