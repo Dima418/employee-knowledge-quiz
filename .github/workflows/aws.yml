@@ -12,7 +12,7 @@ env:
   ECS_SERVICE: api-service
   ECS_CLUSTER: api-clister
   ECS_TASK_DEFINITION_NAME: api-task:1
-  ECS_TASK_DEFINITION: .aws/api-task-definition.json
+  ECS_TASK_DEFINITION: api-task-definition.json
   CONTAINER_NAME: api-task
 
 permissions:
