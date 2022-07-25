@@ -74,6 +74,11 @@ cover/
 *.mo
 *.pot
 
+# AWS deployment bundle
+.aws
+.aws/
+.aws/*
+
 # Django stuff:
 *.log
 local_settings.py
