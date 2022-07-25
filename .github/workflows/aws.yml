@@ -6,10 +6,12 @@ on:
       - "feature/add_github_actions"
 
 env:
+  IMAGE_TAG: latest
   AWS_REGION: us-east-1
   ECR_REPOSITORY: quiz-api
   ECS_SERVICE: api-service
   ECS_CLUSTER: api-clister
+  ECS_TASK_DEFINITION_NAME: api-task:1
   ECS_TASK_DEFINITION: .aws/api-task-definition.json
   CONTAINER_NAME: api-task
 
@@ -41,11 +43,16 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
+        IMAGE_TAG: ${{ env.IMAGE_TAG }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Download task definition
+      id: download-td
+      run: |
+        aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION_NAME }} > ${{ env.ECS_TASK_DEFINITION }}
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
