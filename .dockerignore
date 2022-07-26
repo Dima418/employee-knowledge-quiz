@@ -19,6 +19,7 @@
 .git
 .git/
 .git/*
+.gitignore
 
 ### Venv ###
 venv
