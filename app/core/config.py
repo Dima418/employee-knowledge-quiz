@@ -3,7 +3,10 @@ from dotenv import load_dotenv
 from starlette.config import Config
 from starlette.datastructures import Secret
 from databases import DatabaseURL
+from pathlib import Path
 
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv()
 
@@ -42,3 +45,6 @@ TEST_POSTGRES_PORT: str = config("TEST_POSTGRES_PORT", cast=str, default="5432")
 TEST_POSTGRES_DB: str = config("TEST_POSTGRES_DB", cast=str)
 TEST_DB_DEFAULT: str = f"postgresql://{TEST_POSTGRES_USER}:{TEST_POSTGRES_PASSWORD}@{TEST_POSTGRES_HOST}:{TEST_POSTGRES_PORT}/{TEST_POSTGRES_DB}"
 TEST_DATABASE_URL: DatabaseURL = config("TEST_DATABASE_URL", cast=DatabaseURL, default=TEST_DB_DEFAULT)
+
+SENDGRID_API_KEY: str = config("SENDGRID_API_KEY", cast=str)
+FROM_EMAIL: str = config("FROM_EMAIL", cast=str)
