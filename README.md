@@ -22,7 +22,7 @@
 
 1. Build an image:
 
-        docker build -f "Dockerfile" -t employee_knowledge_quiz:latest .
+        docker build -f "Dockerfile.app" -t employee_knowledge_quiz:latest .
 
 2. Run the image, binding associated ports:
 
