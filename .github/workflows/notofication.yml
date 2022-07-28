@@ -1,19 +1,25 @@
-name: Deploy to Amazon ECS
+name: Deploy notification script
 
 on:
   push:
-    branches:
-      - "main"
+    paths:
+      - "!**__pycache__/"
+      - "!**__pycache__/*"
+      - "send_notification.py"
+      - ".env"
+      - "app/core/**"
+      - "app/database/**"
+      - "app/utils/**"
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: quiz-api
-  CONTAINER_NAME: api-task
+  ECR_REPOSITORY: api-notification
+  CONTAINER_NAME: api-notification-ec2
   IMAGE_TAG: latest
-  ECS_SERVICE: api-service-ec2
-  ECS_CLUSTER: api-cluster-ec2
-  ECS_TASK_DEFINITION_NAME: api-task
-  ECS_TASK_DEFINITION: api-task-definition.json
+  ECS_SERVICE: api-notification-service
+  ECS_CLUSTER: api-notification-cluster-ec2
+  ECS_TASK_DEFINITION_NAME: api-notification-ec2
+  ECS_TASK_DEFINITION: api-notification-task-definition.json
 
 permissions:
   contents: read
@@ -45,7 +51,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ env.IMAGE_TAG }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f "Dockerfile.app" .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f "Dockerfile.notification" .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
