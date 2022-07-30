@@ -6,14 +6,12 @@ from databases import DatabaseURL
 from pathlib import Path
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 load_dotenv()
 
 config = Config(".env")
 
 PROJECT_NAME: str = "Employee Knowledge Quiz"
-VERSION: str = "0.0.4"
+VERSION: str = "1.0.1"
 API_PREFIX: str = "/api"
 BACKEND_CORS_ORIGINS: list[str] = [
     "http://localhost:8080",
