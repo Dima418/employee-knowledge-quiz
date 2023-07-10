@@ -1,0 +1,14 @@
+FROM python:3.10
+
+WORKDIR /employee-knowledge-quiz
+
+COPY ./requirements.txt /employee-knowledge-quiz
+RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
+
+COPY ./send_notification.py /employee-knowledge-quiz
+COPY app/core /employee-knowledge-quiz/app/core
+COPY app/database /employee-knowledge-quiz/app/database
+COPY app/utils /employee-knowledge-quiz/app/utils
+COPY ./.env /employee-knowledge-quiz
+
+CMD ["python3", "send_notification.py"]

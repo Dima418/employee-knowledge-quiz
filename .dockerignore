@@ -1,0 +1,30 @@
+### VS Code ###
+.vscode/
+.vscode/*
+.vscode/settings.json
+
+### Python ###
+**/__pycache__/
+/__pycache__/*
+**/*.pyc
+**/*.pyo
+/.pytest_cache
+/.pytest_cache/
+/.pytest_cache/*
+**/*.pytest_cache
+**/*.pytest_cache/
+**/*.pytest_cache/*
+
+### Git ###
+.git
+.git/
+.git/*
+.gitignore
+
+### Venv ###
+venv
+venv/*
+
+### Other ###
+LICENSE
+README.md
